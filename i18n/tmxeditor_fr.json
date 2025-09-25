@@ -228,13 +228,13 @@
     "selectDifferentLanguages": "Veuillez sélectionner une langue différente"
   },
   "registerNewSubscription": {
-    "enterSubscription": "Saisir la clé de l’abonnement"
+    "enterSubscription": "Veuillez saisir la clé d’abonnement"
   },
   "registerExpired": {
-    "enterSubscription": "Saisir la clé de l’abonnement"
+    "enterSubscription": "Veuillez saisir la clé d’abonnement"
   },
   "registerSubscription": {
-    "enterSubscription": "Saisir la clé de l’abonnement"
+    "enterSubscription": "Veuillez saisir la clé d’abonnement"
   },
   "requestEvaluation": {
     "enterFirstName": "Prénom",
