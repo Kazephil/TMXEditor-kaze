@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -11,6 +11,7 @@
  *******************************************************************************/
 
 import { XMLDocumentType, XMLElement, XMLDocument, SAXParser, DOMBuilder, XMLAttribute, XMLNode, TextNode, Constants, Indenter, XMLWriter } from "typesxml";
+import { I18n } from "./i18n.js";
 
 export class Tbx2Tmx {
 
@@ -18,14 +19,18 @@ export class Tbx2Tmx {
     tmxRoot: XMLElement;
     header: XMLElement;
     body: XMLElement;
-    currentTU: XMLElement;
-    currentTUV: XMLElement;
-    currentSeg: XMLElement;
-    currentLang: string;
-    inTUV: boolean;
-    tuvNotes: Array<XMLElement>;
+    currentTU: XMLElement | undefined;
+    currentTUV: XMLElement | undefined;
+    currentSeg: XMLElement | undefined;
+    currentLang: string = '';
+    inTUV: boolean = false;
+    inLangSection: boolean = false;
+    tuvNotes: Array<XMLElement> = [];
 
-    constructor(appName: string, version: string) {
+    i18n: I18n;
+
+    constructor(appName: string, version: string, resourcesFile: string) {
+        this.i18n = new I18n(resourcesFile);
         this.tmx = new XMLDocument();
         this.tmx.setDocumentType(new XMLDocumentType('tmx', '-//LISA OSCAR:1998//DTD for Translation Memory eXchange//EN', 'tmx14.dtd'));
         this.tmxRoot = new XMLElement('tmx');
@@ -49,20 +54,29 @@ export class Tbx2Tmx {
         let contentHandler: DOMBuilder = new DOMBuilder();
         saxParser.setContentHandler(contentHandler);
         saxParser.parseFile(tbxFile);
-        let root: XMLElement = contentHandler.getDocument().getRoot();
-        this.recurse(root);
-        this.export(tmxFile);
+        let document: XMLDocument | undefined = contentHandler.getDocument();
+        if (document) {
+            let root: XMLElement | undefined = document.getRoot();
+            if (root) {
+                this.recurse(root);
+                this.export(tmxFile);
+            } else {
+                throw new Error(this.i18n.getString('tbx2tmx', 'noRootElement'));
+            }
+        } else {
+            throw new Error(this.i18n.getString('tbx2tmx', 'invalidXML'));
+        }
     }
 
     recurse(e: XMLElement): void {
         if ('tbx' === e.getName()) {
-            let tbxLang: string = e.getAttribute("xml:lang").getValue();
-            if (tbxLang) {
-                this.header.setAttribute(new XMLAttribute('srclang', tbxLang));
+            let lang: XMLAttribute | undefined = e.getAttribute("xml:lang");
+            if (lang) {
+                this.header.setAttribute(new XMLAttribute('srclang', lang.getValue()));
             }
         }
         if ('sourceDesc' === e.getName() || 'publicationStmt' === e.getName()) {
-            let notes:string[] = getHeaderNotes(e);
+            let notes: string[] = this.getHeaderNotes(e);
             if (notes.length > 0) {
                 for (let note of notes) {
                     let noteElement: XMLElement = new XMLElement('note');
@@ -81,23 +95,32 @@ export class Tbx2Tmx {
             this.inTUV = false;
         }
         if ('langSet' === e.getName() || 'langSec' === e.getName()) {
-            this.currentLang = e.getAttribute("xml:lang").getValue();
-            this.tuvNotes = new Array();
+            let lang: XMLAttribute | undefined = e.getAttribute("xml:lang");
+            if (lang) {
+                this.currentLang = lang.getValue();
+                this.tuvNotes = new Array();
+                this.currentTUV = undefined;
+                this.currentSeg = undefined;
+                this.inTUV = false;
+                this.inLangSection = true;
+            }
         }
         if ('tig' === e.getName() || 'termGrp' === e.getName() || 'termSec' === e.getName()) {
             this.currentTUV = new XMLElement('tuv');
             this.currentTUV.setAttribute(new XMLAttribute('xml:lang', this.currentLang));
             if (this.tuvNotes.length > 0) {
                 for (let note of this.tuvNotes) {
-                    this.currentTUV.addElement(note);
+                    let clonedNote: XMLElement = new XMLElement(note.getName());
+                    clonedNote.addString(note.getText());
+                    this.currentTUV.addElement(clonedNote);
                 }
             }
-            this.currentTU.addElement(this.currentTUV);
+            this.currentTU?.addElement(this.currentTUV);
             this.inTUV = true;
         }
         if ('term' === e.getName()) {
             this.currentSeg = new XMLElement("seg");
-            this.currentTUV.addElement(this.currentSeg);
+            this.currentTUV?.addElement(this.currentSeg);
             let content: Array<XMLNode> = e.getContent();
             for (let n of content) {
                 if (n.getNodeType() === Constants.TEXT_NODE) {
@@ -106,36 +129,41 @@ export class Tbx2Tmx {
                 if (n.getNodeType() === Constants.ELEMENT_NODE) {
                     this.recurse(n as XMLElement);
                 }
-                return;
             }
+            return;
         }
         if ("descrip" === e.getName()) {
             let note: XMLElement = new XMLElement('note');
             note.addString(e.getText());
             if (this.inTUV) {
+                let content: Array<XMLNode> = this.currentTUV?.getContent() || [];
+                content.splice(0, 0, note);
+                this.currentTUV?.setContent(content);
+            } else if (this.inLangSection) {
                 this.tuvNotes.push(note);
             } else {
-                let content: Array<XMLNode> = this.currentTU.getContent();
+                let content: Array<XMLNode> = this.currentTU?.getContent() || [];
                 content.splice(0, 0, note);
-                this.currentTU.setContent(content);
+                this.currentTU?.setContent(content);
             }
         }
         if ('termNote' === e.getName()) {
-            let type: string = e.getAttribute("type").getValue();
+            let typeAttribute: XMLAttribute | undefined = e.getAttribute("type");
+            let type: string = typeAttribute ? typeAttribute.getValue() : '';
             if (type !== '') {
                 let prop: XMLElement = new XMLElement('prop');
                 prop.setAttribute(new XMLAttribute('type', type));
                 prop.addString(e.getText());
-                let content: Array<XMLNode> = this.currentTUV.getContent();
+                let content: Array<XMLNode> = this.currentTUV?.getContent() || [];
                 content.splice(0, 0, prop);
-                this.currentTUV.setContent(content);
+                this.currentTUV?.setContent(content);
             }
         }
         if ('hi' === e.getName()) {
-            let content: Array<XMLNode> = this.currentTUV.getContent();
+            let content: Array<XMLNode> = e.getContent();
             for (let n of content) {
                 if (n.getNodeType() === Constants.TEXT_NODE) {
-                    this.currentSeg.addTextNode(n as TextNode);
+                    this.currentSeg?.addTextNode(n as TextNode);
                 }
                 if (n.getNodeType() === Constants.ELEMENT_NODE) {
                     this.recurse(n as XMLElement);
@@ -147,13 +175,13 @@ export class Tbx2Tmx {
             let note: XMLElement = new XMLElement('note');
             note.addString(e.getText());
             if (this.inTUV) {
-                let content: Array<XMLNode> = this.currentTUV.getContent();
+                let content: Array<XMLNode> = this.currentTUV?.getContent() || [];
                 content.splice(0, 0, note);
-                this.currentTUV.setContent(content);
+                this.currentTUV?.setContent(content);
             } else {
-                let content: Array<XMLNode> = this.currentTU.getContent();
+                let content: Array<XMLNode> = this.currentTU?.getContent() || [];
                 content.splice(0, 0, note);
-                this.currentTU.setContent(content);
+                this.currentTU?.setContent(content);
             }
         }
         let children: Array<XMLElement> = e.getChildren();
@@ -162,6 +190,11 @@ export class Tbx2Tmx {
         }
         if ('tig' === e.getName() || 'termGrp' === e.getName() || 'termSec' === e.getName()) {
             this.inTUV = false;
+            this.currentTUV = undefined;
+            this.currentSeg = undefined;
+        }
+        if ('langSet' === e.getName() || 'langSec' === e.getName()) {
+            this.inLangSection = false;
         }
     }
 
@@ -170,14 +203,16 @@ export class Tbx2Tmx {
         indenter.indent(this.tmxRoot);
         XMLWriter.writeDocument(this.tmx, tmxFile);
     }
+
+    getHeaderNotes(e: XMLElement): string[] {
+        let notes: string[] = new Array();
+        e.getChildren().forEach(child => {
+            if ('p' === child.getName()) {
+                notes.push(child.getText());
+            }
+        });
+        return notes;
+    }
 }
 
-function getHeaderNotes(e: XMLElement): string[] {
-    let notes: string[] = new Array();
-    e.getChildren().forEach(child => {
-        if ('p' === child.getName()) {
-            notes.push(child.getText());
-        }
-    });
-    return notes;
-}
+

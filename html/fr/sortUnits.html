@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Trier les unités de traduction</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new SortUnits();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="sortLanguage">Langue sur laquelle trier</label></td>
@@ -29,7 +29,11 @@
         <button id="sort">Trier les unités de traduction</button>
         <button id="clearSort">Annuler le tri</button>
     </div>
-    <script src="../../js/sortUnits.js"></script>
+    
+    <script>
+        const { SortUnits } = require('../../js/sortUnits.js');
+        new SortUnits();
+    </script>
 </body>
 
 </html>

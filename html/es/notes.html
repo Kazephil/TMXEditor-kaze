@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title id="title">Notas de Unidad de Traducci&oacute;n</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Notes();">
+<body class="dialog_body">
 
     <div class="paddedPanel" style="height: 200px;">
         <table id="notesTable" class="stripes" class="fill_width">
@@ -19,7 +19,10 @@
         <button id="save">Guardar Notas</button>
     </div>
 
-    <script src="../../js/notes.js"></script>
+    <script>
+        const { Notes } = require('../../js/notes.js');
+        new Notes();
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>TMXEditor</title>
@@ -8,16 +8,17 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body onload="new Main();">
+<body>
 
     <div id="topBar" class="toolbar"></div>
     <div id="mainPanel" style="overflow: hidden;"></div>
     <div id="status" class="status" style="display:none;"></div>
     <div id="bottomBar" class="toolbar"></div>
 
-    <script src="../../js/divider.js"></script>
-    <script src="../../js/language.js"></script>
-    <script src="../../js/main.js"></script>
+    <script>
+        const { Main } = require('../../js/main.js');
+        new Main();
+    </script>
 </body>
 
 </html>

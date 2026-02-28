@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Langues du fichier CSV ou TSV</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" style="padding: 10px 10px 0px 10px;" onload="new CsvLanguages();">
+<body class="dialog_body" style="padding: 10px 10px 0px 10px;">
 
     <div class="bordered fill_width"
         style="width: 480px; height: 200px; padding: 4px; margin-top:10px; margin-left:4px;">
@@ -23,7 +23,10 @@
         <button id="setCsvLanguages">Enregistrer</button>
     </div>
 
-    <script src="../../js/csvLanguages.js"></script>
+    <script>
+        const { CsvLanguages } = require('../../js/csvLanguages.js');
+        new CsvLanguages();
+    </script>
 </body>
 
 </html>

@@ -18,11 +18,12 @@
     "dismiss": "Ignorar",
     "ErrorSaving": "Error desconocido al guardar archivo",
     "Saving": "Guardando...",
-    "UnitsPage": "Unidades Página",
+    "UnitsPage": "Unidades por Página",
     "ClosingFile": "Cerrando archivo...",
     "DontSave": "No Guardar",
     "tuProperties": "Propiedades UT",
     "RemovingUnits": "Eliminando unidades...",
+    "tagColors": "Los colores de las etiquetas se ajustarán al reiniciar la aplicación",
     "ErrorRemovingUnits": "Error desconocido al eliminar unidades",
     "Consolidating": "Consolidando...",
     "UpdateDownloaded": "Actualización descargada",
@@ -54,12 +55,13 @@
     "Splitting": "Dividiendo...",
     "OpenSDLTM": "Abrir Archivo SDLTM",
     "MaintenanceError": "Error desconocido al realizar mantenimiento",
-    "messageReceived": "Hemos recibido su solicitud. Se ha enviado una clave de evaluación a la dirección de correo electrónico indicada.\n\nCompruebe su filtro de correo no deseado si no recibe la clave de suscripción de evaluación en los próximos minutos.",
+    "messageReceived": "Hemos recibido su solicitud. Se ha enviado una clave de evaluación a la dirección de correo electrónico indicada. \n\nCompruebe su filtro de correo no deseado si no recibe la clave de suscripción de evaluación en los próximos minutos.",
     "UnitsTooltip": "Introduzca el número de unidades/página y pulse INTRO",
     "SDLTMFile": "Archivo SDLTM",
     "noUpdates": "No hay actualizaciones disponibles",
     "ConvertedTMX": "Archivo TMX Convertido",
     "RemovingDuplicates": "Eliminando unidades duplicadas...",
+    "RemoveNotes": "Eliminar Nota",
     "ErrorCleaning": "Error desconocido al limpiar caracteres",
     "ErrorRemovingEntries": "Error desconocido eliminando entradas con traducciones iguales a origen",
     "RemovingEntries": "Eliminando entradas...",
@@ -70,6 +72,7 @@
     "ErrorLoading": "Error desconocido al cargar archivo",
     "OpeningFile": "Abriendo archivo...",
     "fileCleaned": "Archivo limpiado",
+    "RemoveProperties": "Eliminar Propiedad",
     "ErrorSplitting": "Error desconocido al dividir archivo",
     "LoadedUnits": "Cargando {0} unidades...",
     "Changing": "Cambiando...",
@@ -104,10 +107,7 @@
     "Converting": "Convirtiendo...",
     "UnitsLabel": "Unidades: ",
     "SaveChanges": "¿Guardar cambios?",
-    "fileAttributesSaved": "Atributos de archivo guardados",
-    "RemoveProperties": "Eliminar Propiedad",
-    "RemoveNotes": "Eliminar Nota"   ,
-    "tagColors": "El color de las etiquetas se actualizará en el próximo inicio"
+    "fileAttributesSaved": "Atributos de archivo guardados"
   },
   "registerExpired": {"enterSubscription": "Introduzca la clave de suscripción"},
   "excelLanguages": {"selectAllLanguages": "Seleccione todos los idiomas"},
@@ -165,11 +165,12 @@
     "SelectAll": "Seleccionar Todo",
     "Open": "Abrir",
     "AddLanguage": "Añadir Idioma...",
+    "EditAttributes": "Editar Atributos",
     "ViewMenu": "&Ver",
     "RegisterSubscription": "Registrar Suscripción...",
     "ChangeLanguage": "Cambiar Idioma...",
     "Preferences": "Preferencias...",
-    "RemoveSpaces": "Eliminar Espacios Iniciales/Finales",
+    "RemoveSpaces": "Eliminar Espacios Iniciales y Finales",
     "ValidateTMX": "Validar Archivo TMX...",
     "ExportExcel": "Exportar Archivo Excel...",
     "CleanInvalidChars": "Limpiar Caracteres Inválidos...",
@@ -184,6 +185,8 @@
     "ChangeSourceLanguage": "Cambiar Idioma Origen...",
     "ReplaceText": "Reemplazar Texto...",
     "RemoveDuplicates": "Eliminar Unidades Duplicadas",
+    "EditProperties": "Editar Propiedades",
+    "EditNotes": "Editar Notas",
     "ConvertExcel": "Convertir Archivo Excel a TMX",
     "ToggleDeveloperTools": "Herramientas Para Desarrolladores",
     "Services": "Servicios",
@@ -206,11 +209,11 @@
     "selectTmx": "Seleccione archivo TMX"
   },
   "mergeFiles": {
+    "removeFileText": "Eliminar Archivo",
+    "addTmxFiles": "Añadir archivos TMX",
     "selectFiles": "Seleccione archivos",
     "selectMerged": "Seleccione archivo TMX combinado",
-    "addTmxFiles": "Añadir archivos TMX",        
-    "addMoreTmx": "Añadir más archivos TMX",
-    "removeFileText": "Eliminar Archivo"
+    "addMoreTmx": "Añadir más archivos TMX"
   },
   "requestEvaluation": {
     "enterEmail": "Introduzca email",
@@ -223,6 +226,10 @@
   "csvLanguages": {"selectAllLanguages": "Seleccione todos los idiomas"},
   "addNote": {"enterNote": "Introduzca nota"},
   "registerSubscription": {"enterSubscription": "Introduzca la clave de suscripción"},
+  "tbx2tmx": {
+    "invalidXML": "Error al analizar el archivo TBX: XML no válido",
+    "noRootElement": "Error al analizar el archivo TBX: No se encontró un elemento raíz"
+  },
   "searchReplace": {
     "enterReplaceText": "Introduzca texto de sustitución",
     "enterSearchText": "Introduzca el texto a buscar"

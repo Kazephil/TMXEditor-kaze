@@ -186,12 +186,19 @@ th {
 
 .titlePanel {
 	margin: 0;
-	padding: 0;
+	padding: 0px;
 	border-radius: 4px 4px 0px 0px;
 	background: var(--themeDark);
 	color: var(--white);
 	fill: var(--white);
 	stroke: var(--white);
+}
+
+.titlePanel svg {
+	fill: var(--white);
+	stroke: var(--white);
+	margin-top: 4px;
+	margin-right: 4px;
 }
 
 .titlePanel td {

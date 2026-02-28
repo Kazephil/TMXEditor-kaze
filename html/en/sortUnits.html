@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new SortUnits();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="sortLanguage">Sort Language</label></td>
@@ -28,7 +28,11 @@
         <button id="sort">Sort Translation Units</button>
         <button id="clearSort">Clear Sorting</button>
     </div>
-    <script src="../../js/sortUnits.js"></script>
+    
+    <script>
+        const { SortUnits } = require('../../js/sortUnits.js');
+        new SortUnits();
+    </script>
 </body>
 
 </html>

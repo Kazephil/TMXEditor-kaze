@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" style="padding: 10px 10px 0px 10px;" onload="new CsvLanguages();">
+<body class="dialog_body" style="padding: 10px 10px 0px 10px;">
 
     <div class="bordered fill_width"
         style="width: 480px; height: 200px; padding: 4px; margin-top:10px; margin-left:4px;">
@@ -22,7 +22,10 @@
         <button id="setCsvLanguages">Set Languages</button>
     </div>
 
-    <script src="../../js/csvLanguages.js"></script>
+    <script>
+        const { CsvLanguages } = require('../../js/csvLanguages.js');
+        new CsvLanguages();
+    </script>
 </body>
 
 </html>

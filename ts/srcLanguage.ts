@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,23 +10,24 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class SourceLanguage {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class SourceLanguage {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-admin-languages');
-        this.electron.ipcRenderer.on('admin-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-admin-languages');
+        ipcRenderer.on('admin-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.adminLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
             (document.getElementById('language') as HTMLSelectElement).value = arg.srcLang;
         });
-        document.getElementById('change').addEventListener('click', () => {
+        (document.getElementById('change') as HTMLButtonElement).addEventListener('click', () => {
             this.changeSrcLanguage();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -34,11 +35,11 @@ class SourceLanguage {
                 this.changeSrcLanguage();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-srcLanguage');
+                ipcRenderer.send('close-srcLanguage');
             }
         });
-        document.getElementById('language').focus();
-        this.electron.ipcRenderer.send('srcLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('language') as HTMLSelectElement).focus();
+        ipcRenderer.send('srcLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     adminLanguages(langs: Language[]): void {
@@ -48,11 +49,11 @@ class SourceLanguage {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         language.innerHTML = options;
-        this.electron.ipcRenderer.send('get-source-language');
+        ipcRenderer.send('get-source-language');
     }
 
     changeSrcLanguage(): void {
         let language: HTMLSelectElement = document.getElementById('language') as HTMLSelectElement;
-        this.electron.ipcRenderer.send('change-source-language', language.value);
+        ipcRenderer.send('change-source-language', language.value);
     }
 }

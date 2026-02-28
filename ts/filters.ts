@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -9,24 +9,24 @@
  * Contributors:
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-class Filters {
-
-    electron = require("electron");
+export class Filters {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-filter-options', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-filter-options', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setFilterOptions(arg);
         });
-        this.electron.ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
             if (arg.srcLang !== '*all*') {
                 (document.getElementById('sourceLanguage') as HTMLSelectElement).value = arg.srcLang;
             }
@@ -37,13 +37,13 @@ class Filters {
                     clipText => (document.getElementById('filterText') as HTMLInputElement).value += clipText);
             }
         });
-        document.getElementById('filterUntranslated').addEventListener('click', () => {
+        (document.getElementById('filterUntranslated') as HTMLInputElement).addEventListener('click', () => {
             this.togleSourceLanguage();
         });
-        document.getElementById('applyFilters').addEventListener('click', () => {
+        (document.getElementById('applyFilters') as HTMLButtonElement).addEventListener('click', () => {
             this.applyFilters();
         });
-        document.getElementById('clearFilters').addEventListener('click', () => {
+        (document.getElementById('clearFilters') as HTMLButtonElement).addEventListener('click', () => {
             this.clearFilters();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -54,8 +54,8 @@ class Filters {
                 this.clearFilters();
             }
         });
-        document.getElementById('filterText').focus();
-        this.electron.ipcRenderer.send('filters-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('filterText') as HTMLInputElement).focus();
+        ipcRenderer.send('filters-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     togleSourceLanguage(): void {
@@ -72,8 +72,8 @@ class Filters {
         }
         sourceLanguage.innerHTML = options;
         filterLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('get-filter-options');
-        this.electron.ipcRenderer.send('get-source-language');
+        ipcRenderer.send('get-filter-options');
+        ipcRenderer.send('get-source-language');
     }
 
     setFilterOptions(arg: any): void {
@@ -105,7 +105,7 @@ class Filters {
         let filterUntranslated: boolean = (document.getElementById('filterUntranslated') as HTMLInputElement).checked;
         let filterSrcLanguage: string = (document.getElementById('sourceLanguage') as HTMLSelectElement).value;
         if (!filterUntranslated && filterText.length === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'filters', key: 'enterText', parent: 'filters' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'filters', key: 'enterText', parent: 'filters' });
             return;
         }
         let filterOptions: any = {
@@ -116,10 +116,10 @@ class Filters {
             regExp: regExp,
             filterSrcLanguage: filterSrcLanguage
         };
-        this.electron.ipcRenderer.send('filter-options', filterOptions);
+        ipcRenderer.send('filter-options', filterOptions);
     }
 
     clearFilters(): void {
-        this.electron.ipcRenderer.send('clear-filter-options');
+        ipcRenderer.send('clear-filter-options');
     }
 }

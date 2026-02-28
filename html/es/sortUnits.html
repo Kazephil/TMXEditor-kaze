@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Ordenar Unidades de Traducci&oacute;n</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new SortUnits();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="sortLanguage">Idioma de Ordenamiento</label></td>
@@ -27,7 +27,11 @@
     <div class="buttonArea">
         <button id="sort">Ordenar Unidades de Traducci&oacute;n</button> <button id="clearSort">Cancelar Ordenamiento</button>
     </div>
-    <script src="../../js/sortUnits.js"></script>
+    
+    <script>
+        const { SortUnits } = require('../../js/sortUnits.js');
+        new SortUnits();
+    </script>
 </body>
 
 </html>

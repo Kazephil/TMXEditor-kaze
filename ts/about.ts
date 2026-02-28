@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,32 +10,32 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class About {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class About {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, arg: any) => {
             (document.getElementById('theme') as HTMLLinkElement).href = arg;
         });
-        this.electron.ipcRenderer.send('get-version');
-        this.electron.ipcRenderer.on('set-version', (event: Electron.IpcRendererEvent, arg: any) => {
-            document.getElementById('version').innerHTML = arg;
+        ipcRenderer.send('get-version');
+        ipcRenderer.on('set-version', (event: Electron.IpcRendererEvent, arg: any) => {
+            (document.getElementById('version') as HTMLTitleElement).innerHTML = arg;
         });
-        document.getElementById('system').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('system-info-clicked');
-            document.getElementById('system').blur();
+        (document.getElementById('system') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('system-info-clicked');
+            (document.getElementById('system') as HTMLButtonElement).blur();
         });
-        document.getElementById('licenses').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('licenses-clicked');
-            document.getElementById('licenses').blur();
+        (document.getElementById('licenses') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('licenses-clicked');
+            (document.getElementById('licenses') as HTMLButtonElement).blur();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-about');
+                ipcRenderer.send('close-about');
             }
         });
-        this.electron.ipcRenderer.send('about-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('about-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 }

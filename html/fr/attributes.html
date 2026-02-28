@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title id="title">Attributs de l’unité de traduction</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new Attributes();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr id="topRow">
@@ -92,7 +92,10 @@
         <button id="saveAttributes">Enregistrer les attributs</button>
     </div>
 
-    <script src="../../js/attributes.js"></script>
+    <script>
+        const { Attributes } = require('../../js/attributes.js');
+        new Attributes();
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Propiedades del Archivo</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body onload="new FileInfo();">
+<body>
 
     <div id="tabHolder" class="tabHolder">
         <div class="tab selectedTab" id="atributesTab">
@@ -133,7 +133,10 @@
         <button id="saveNotes">Guardar Notas</button>
     </div>
 
-    <script src="../../js/fileInfo.js"></script>
+    <script>
+        const { FileInfo } = require('../../js/fileInfo.js');
+        new FileInfo();
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Panel de Mantenimiento</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Maintenance();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr>
@@ -68,7 +68,10 @@
         <button id="execute">Realizar Mantenimiento</button>
     </div>
 
-    <script src="../../js/maintenance.js"></script>
+    <script>
+        const { Maintenance } = require('../../js/maintenance.js');
+        new Maintenance();
+    </script>
 </body>
 
 </html>

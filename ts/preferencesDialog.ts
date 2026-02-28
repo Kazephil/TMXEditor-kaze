@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,21 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class PreferencesDialog {
+import { ipcRenderer } from "electron";
+import { Preferences } from "./preferences.js";
 
-    electron = require("electron");
+export class PreferencesDialog {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
-            this.electron.ipcRenderer.send('get-preferences');
+            ipcRenderer.send('get-preferences');
         });
-        this.electron.ipcRenderer.on('set-preferences', (event: Electron.IpcRendererEvent, arg: Preferences) => {
+        ipcRenderer.on('set-preferences', (event: Electron.IpcRendererEvent, arg: Preferences) => {
             this.setPreferences(arg);
         });
-        document.getElementById('savePreferences').addEventListener('click', () => {
+        (document.getElementById('savePreferences') as HTMLButtonElement).addEventListener('click', () => {
             this.savePreferences();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,12 +32,12 @@ class PreferencesDialog {
                 this.savePreferences();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-preferences');
+                ipcRenderer.send('close-preferences');
             }
         });
-        document.getElementById('appLangSelect').focus();
+        (document.getElementById('appLangSelect') as HTMLSelectElement).focus();
         setTimeout(() => {
-            this.electron.ipcRenderer.send('preferences-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+            ipcRenderer.send('preferences-height', { width: document.body.clientWidth, height: document.body.clientHeight });
         }, 200);
     }
 
@@ -53,6 +54,6 @@ class PreferencesDialog {
         let appLang: string = (document.getElementById('appLangSelect') as HTMLSelectElement).value;
         let changeId: boolean = (document.getElementById('changeId') as HTMLInputElement).checked;
         let prefs: Preferences = { theme: theme, indentation: indent, appLang: appLang, changeId: changeId };
-        this.electron.ipcRenderer.send('save-preferences', prefs);
+        ipcRenderer.send('save-preferences', prefs);
     }
 }

@@ -200,6 +200,13 @@ th {
 	stroke: var(--white);
 }
 
+.titlePanel svg {
+	fill: var(--white);
+	stroke: var(--white);
+	margin-top: 4px;
+	margin-right: 4px;
+}
+
 .titlePanel td {
 	height: 30px;
 	padding-top: 0px !important;

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title id="title">Propriétés de l’unité de traduction</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new Properties();">
+<body class="dialog_body">
 
     <div class="paddedPanel" style="height: 200px;">
         <table id="propsTable" class="stripes fill_width">
@@ -20,7 +20,10 @@
         <button id="save">Enregistrer les propriétés</button>
     </div>
 
-    <script src="../../js/properties.js"></script>
+    <script>
+        const { Properties } = require('../../js/properties.js');
+        new Properties();
+    </script>
 </body>
 
 </html>

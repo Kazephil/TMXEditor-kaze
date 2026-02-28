@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new SourceLanguage();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle"><label for="language">Language</label></td>
@@ -20,7 +20,11 @@
     <div class="buttonArea">
         <button id="change">Change Source Language</button>
     </div>
-    <script src="../../js/srcLanguage.js"></script>
+    
+    <script>
+        const { SourceLanguage } = require('../../js/srcLanguage.js');
+        new SourceLanguage();
+    </script>
 </body>
 
 </html>

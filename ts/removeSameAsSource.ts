@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,25 +10,26 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class RemoveSameAsSource {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require("electron");
+export class RemoveSameAsSource {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
             if (arg.srcLang !== '*all*') {
                 (document.getElementById('sourceLanguage') as HTMLSelectElement).value = arg.srcLang;
             }
         });
-        document.getElementById('removeSameAsSource').addEventListener('click', () => {
+        (document.getElementById('removeSameAsSource') as HTMLButtonElement).addEventListener('click', () => {
             this.removeSameAsSource();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -36,11 +37,11 @@ class RemoveSameAsSource {
                 this.removeSameAsSource();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-removeSameAsSource');
+                ipcRenderer.send('close-removeSameAsSource');
             }
         });
-        document.getElementById('sourceLanguage').focus();
-        this.electron.ipcRenderer.send('removeSameAsSource-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('sourceLanguage') as HTMLSelectElement).focus();
+        ipcRenderer.send('removeSameAsSource-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -50,11 +51,11 @@ class RemoveSameAsSource {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         sourceLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('get-source-language');
+        ipcRenderer.send('get-source-language');
     }
 
     removeSameAsSource(): void {
         let srcLang: string = (document.getElementById('sourceLanguage') as HTMLSelectElement).value;
-        this.electron.ipcRenderer.send('remove-sameAsSource', { srcLang: srcLang });
+        ipcRenderer.send('remove-sameAsSource', { srcLang: srcLang });
     }
 }

@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new MergeFiles();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="file">Merged TMX File</label></td>
@@ -28,7 +28,11 @@
         <button id="addFiles">Add Files</button>
         <button id="mergeFiles">Merge TMX Files</button>
     </div>
-    <script src="../../js/mergeFiles.js"></script>
+    
+    <script>
+        const { MergeFiles } = require('../../js/mergeFiles.js');
+        new MergeFiles();
+    </script>
 </body>
 
 </html>

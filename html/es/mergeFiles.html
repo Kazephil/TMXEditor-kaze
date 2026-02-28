@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Combinar Archivos TMX</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new MergeFiles();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="file">Archivo TMX Combinado</label></td>
@@ -28,7 +28,11 @@
         <button id="addFiles">A&ntilde;adir Archivos</button> 
         <button id="mergeFiles">Combinar Archivos TMX</button>
     </div>
-    <script src="../../js/mergeFiles.js"></script>
+    
+    <script>
+        const { MergeFiles } = require('../../js/mergeFiles.js');
+        new MergeFiles();
+    </script>
 </body>
 
 </html>

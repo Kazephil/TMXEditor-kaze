@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Eliminar Unidades No Traducidas</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new RemoveUntranslated();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="sourceLanguage">Idioma Origen</label></td>
@@ -20,7 +20,11 @@
     <div class="buttonArea">
         <button id="removeUntranslated">Eliminar Unidades No Traducidas</button>
     </div>
-    <script src="../../js/removeUntranslated.js"></script>
+    
+    <script>
+        const { RemoveUntranslated } = require('../../js/removeUntranslated.js');
+        new RemoveUntranslated();
+    </script>
 </body>
 
 </html>

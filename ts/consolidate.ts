@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,25 +10,26 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Consolidate {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require("electron");
+export class Consolidate {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
             if (arg.srcLang !== '*all*') {
                 (document.getElementById('sourceLanguage') as HTMLSelectElement).value = arg.srcLang;
             }
         });
-        document.getElementById('consolidate').addEventListener('click', () => {
+        (document.getElementById('consolidate') as HTMLButtonElement).addEventListener('click', () => {
             this.consolidate();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -36,11 +37,11 @@ class Consolidate {
                 this.consolidate();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-consolidate');
+                ipcRenderer.send('close-consolidate');
             }
         });
-        document.getElementById('sourceLanguage').focus();
-        this.electron.ipcRenderer.send('consolidate-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('sourceLanguage') as HTMLSelectElement).focus();
+        ipcRenderer.send('consolidate-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -50,11 +51,11 @@ class Consolidate {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         sourceLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('get-source-language');
+        ipcRenderer.send('get-source-language');
     }
 
     consolidate(): void {
         let srcLang: string = (document.getElementById('sourceLanguage') as HTMLSelectElement).value;
-        this.electron.ipcRenderer.send('consolidate-units', { srcLang: srcLang });
+        ipcRenderer.send('consolidate-units', { srcLang: srcLang });
     }
 }

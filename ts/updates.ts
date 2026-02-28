@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,30 +10,30 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Updates {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class Updates {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-versions');
-        this.electron.ipcRenderer.on('set-versions', (event: Electron.IpcRendererEvent, arg: any) => {
-            document.getElementById('current').innerText = arg.current;
-            document.getElementById('latest').innerText = arg.latest;
-            this.electron.ipcRenderer.send('updates-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('get-versions');
+        ipcRenderer.on('set-versions', (event: Electron.IpcRendererEvent, arg: any) => {
+            (document.getElementById('current') as HTMLTableCellElement).innerText = arg.current;
+            (document.getElementById('latest') as HTMLTableCellElement).innerText = arg.latest;
+            ipcRenderer.send('updates-height', { width: document.body.clientWidth, height: document.body.clientHeight });
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Enter' || event.code === 'NumpadEnter') {
-                this.electron.ipcRenderer.send('download-latest');
+                ipcRenderer.send('download-latest');
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-updates');
+                ipcRenderer.send('close-updates');
             }
         });
-        document.getElementById('release').addEventListener('click', () => { this.electron.ipcRenderer.send('release-history'); });
-        document.getElementById('download').addEventListener('click', () => { this.electron.ipcRenderer.send('download-latest'); });
+        (document.getElementById('release') as HTMLButtonElement).addEventListener('click', () => { ipcRenderer.send('release-history'); });
+        (document.getElementById('download') as HTMLButtonElement).addEventListener('click', () => { ipcRenderer.send('download-latest'); });
     }
 }

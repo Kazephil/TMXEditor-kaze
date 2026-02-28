@@ -47,13 +47,15 @@ Technical Support |  Peer support at  [Groups.io](https://groups.io/g/maxprogram
 - [XMLJava](https://github.com/rmraya/XMLJava)
 - [BCP47J](https://github.com/rmraya/BCP47J)
 - [TMXValidator](https://github.com/rmraya/TMXValidator)
+- [TypesXML](https://github.com/rmraya/TypesXML)
+- [TypesBCP47](https://github.com/rmraya/TypesBCP47)
+- [sdltm](https://github.com/rmraya/sdltm)
 
 ## Requirements
 
 - JDK 21 or newer is required for compiling and building. Get it from [Adoptium](https://adoptium.net/).
-- Gradle 9.0 or newer. Get it from [https://gradle.org/](https://gradle.org/)
-- Node.js 22.13.0 LTS or newer. Get it from [https://nodejs.org/](https://nodejs.org/)
-- TypeScript 5.9.2 or newer, get it from [https://www.typescriptlang.org/](https://www.typescriptlang.org/)
+- Gradle 9.2 or newer. Get it from [https://gradle.org/](https://gradle.org/)
+- Node.js 24.13.0 LTS or newer. Get it from [https://nodejs.org/](https://nodejs.org/)
 
 ## Building
 

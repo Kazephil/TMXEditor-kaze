@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,38 +10,38 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class ConvertCSV {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class ConvertCSV {
 
     langs: string[] = [];
     columns: number = 0;
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-charsets');
-        this.electron.ipcRenderer.on('set-charsets', (event: Electron.IpcRendererEvent, arg: string[]) => {
+        ipcRenderer.send('get-charsets');
+        ipcRenderer.on('set-charsets', (event: Electron.IpcRendererEvent, arg: string[]) => {
             this.setCharsets(arg);
         });
-        this.electron.ipcRenderer.on('set-csvfile', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-csvfile', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setCsvFile(arg);
         });
-        this.electron.ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
+        ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
             (document.getElementById('tmxFile') as HTMLInputElement).value = arg;
         });
-        this.electron.ipcRenderer.on('set-preview', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-preview', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setPreview(arg);
         });
-        this.electron.ipcRenderer.on('csv-languages', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('csv-languages', (event: Electron.IpcRendererEvent, arg: any) => {
             this.csvLanguages(arg);
         });
-        document.getElementById('browseCsvFiles').addEventListener('click', () => {
+        (document.getElementById('browseCsvFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.browseCsvFiles();
         });
-        document.getElementById('browseTmxFiles').addEventListener('click', () => {
+        (document.getElementById('browseTmxFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.browseTmxFiles();
         });
         (document.getElementById('charSets') as HTMLSelectElement).addEventListener('change', () => {
@@ -59,21 +59,21 @@ class ConvertCSV {
         (document.getElementById('optionalDelims') as HTMLInputElement).addEventListener('change', () => {
             this.refreshPreview();
         });
-        document.getElementById('refreshPreview').addEventListener('click', () => {
+        (document.getElementById('refreshPreview') as HTMLButtonElement).addEventListener('click', () => {
             this.refreshPreview();
         });
-        document.getElementById('setLanguages').addEventListener('click', () => {
+        (document.getElementById('setLanguages') as HTMLButtonElement).addEventListener('click', () => {
             this.setLanguages();
         });
-        document.getElementById('convert').addEventListener('click', () => {
+        (document.getElementById('convert') as HTMLButtonElement).addEventListener('click', () => {
             this.convertFile();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-convertCsv');
+                ipcRenderer.send('close-convertCsv');
             }
         });
-        this.electron.ipcRenderer.send('convertCsv-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('convertCsv-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     setCharsets(charsets: string[]): void {
@@ -89,7 +89,7 @@ class ConvertCSV {
     }
 
     browseCsvFiles(): void {
-        this.electron.ipcRenderer.send('get-csvfile');
+        ipcRenderer.send('get-csvfile');
     }
 
     setCsvFile(arg: string): void {
@@ -118,7 +118,7 @@ class ConvertCSV {
                 value = value + '.tmx';
             }
         }
-        this.electron.ipcRenderer.send('get-converted-tmx', { default: value });
+        ipcRenderer.send('get-converted-tmx', { default: value });
     }
 
     refreshPreview(): void {
@@ -154,7 +154,7 @@ class ConvertCSV {
             fixQuotes: (document.getElementById('fixQuotes') as HTMLInputElement).checked,
             optionalDelims: (document.getElementById('optionalDelims') as HTMLInputElement).checked
         }
-        this.electron.ipcRenderer.send('get-csv-preview', arg);
+        ipcRenderer.send('get-csv-preview', arg);
     }
 
     setPreview(arg: any): void {
@@ -162,21 +162,21 @@ class ConvertCSV {
         if (arg.langCodes.length > 0) {
             this.langs = arg.langCodes.splice(0);
         }
-        document.getElementById('preview').innerHTML = arg.preview;
-        document.getElementById('columns').innerHTML = '' + this.columns;
+        (document.getElementById('preview') as HTMLDivElement).innerHTML = arg.preview;
+        (document.getElementById('columns') as HTMLSpanElement).innerHTML = '' + this.columns;
     }
 
     setLanguages(): void {
         let csvFile = (document.getElementById('csvFile') as HTMLInputElement);
         if (csvFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'selectCsv', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'selectCsv', parent: 'convertCSV' });
             return;
         }
         if (this.columns === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'columnsNotDetected', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'columnsNotDetected', parent: 'convertCSV' });
             return;
         }
-        this.electron.ipcRenderer.send('get-csv-languages', { columns: this.columns, languages: this.langs });
+        ipcRenderer.send('get-csv-languages', { columns: this.columns, languages: this.langs });
     }
 
     csvLanguages(arg: string[]): void {
@@ -188,20 +188,20 @@ class ConvertCSV {
     convertFile(): void {
         let csvFile = (document.getElementById('csvFile') as HTMLInputElement);
         if (csvFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'selectCsv', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'selectCsv', parent: 'convertCSV' });
             return;
         }
         let tmxFile = (document.getElementById('tmxFile') as HTMLInputElement);
         if (tmxFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'selectTmx', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'selectTmx', parent: 'convertCSV' });
             return;
         }
         if (this.langs.length < 2) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'setLanguages', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'setLanguages', parent: 'convertCSV' });
             return;
         }
         if (this.langs.length != this.columns) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group:'convertCSV', key:'setAllLanguages', parent: 'convertCSV' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertCSV', key: 'setAllLanguages', parent: 'convertCSV' });
             return;
         }
 
@@ -234,6 +234,6 @@ class ConvertCSV {
             optionalDelims: (document.getElementById('optionalDelims') as HTMLInputElement).checked,
             openTMX: (document.getElementById('openTMX') as HTMLInputElement).checked
         }
-        this.electron.ipcRenderer.send('convert-csv-tmx', arg);
+        ipcRenderer.send('convert-csv-tmx', arg);
     }
 }

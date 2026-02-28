@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,26 +10,29 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class CsvLanguages {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
+
+export class CsvLanguages {
 
     electron = require('electron');
 
-    columns: number;
+    columns: number = 0;
     options: string = '';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('all-languages');
-        this.electron.ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('all-languages');
+        ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.languagesList(arg);
         });
-        this.electron.ipcRenderer.on('set-csv-lang-args', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-csv-lang-args', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setCsvLangArgs(arg);
         });
-        document.getElementById('setCsvLanguages').addEventListener('click', () => {
+        (document.getElementById('setCsvLanguages') as HTMLButtonElement).addEventListener('click', () => {
             this.setCsvLanguages();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -37,10 +40,10 @@ class CsvLanguages {
                 this.setCsvLanguages();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-csvLanguages');
+                ipcRenderer.send('close-csvLanguages');
             }
         });
-        this.electron.ipcRenderer.send('csvLanguages-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('csvLanguages-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     setCsvLanguages(): void {
@@ -50,18 +53,18 @@ class CsvLanguages {
             if (lang !== 'none') {
                 langs.push(lang);
             } else {
-                this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'csvLanguages', key: 'selectAllLanguages', parent: 'csvLanguages' });
+                ipcRenderer.send('show-message', { type: 'warning', group: 'csvLanguages', key: 'selectAllLanguages', parent: 'csvLanguages' });
                 return;
             }
         }
-        this.electron.ipcRenderer.send('set-csv-languages', langs);
+        ipcRenderer.send('set-csv-languages', langs);
     }
 
     languagesList(langs: Language[]): void {
         for (let lang of langs) {
             this.options = this.options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
-        this.electron.ipcRenderer.send('get-csv-lang-args');
+        ipcRenderer.send('get-csv-lang-args');
     }
 
     setCsvLangArgs(arg: any): void {
@@ -70,7 +73,7 @@ class CsvLanguages {
         for (let i = 0; i < this.columns; i++) {
             rows = rows + '<tr><td class="noWrap middle">' + arg.labels[i] + '</td><td class="middle"><select id="lang_' + i + '" class="table_select">' + this.options + '</select></td></tr>'
         }
-        document.getElementById('langsTable').innerHTML = rows;
+        (document.getElementById('langsTable') as HTMLTableElement).innerHTML = rows;
         let langs: string[] = arg.languages;
         for (let i = 0; i < langs.length; i++) {
             (document.getElementById('lang_' + i) as HTMLSelectElement).value = langs[i];

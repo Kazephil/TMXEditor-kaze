@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,17 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class AddNote {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
-
-    currentId: string;
-    currentType: string;
+export class AddNote {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
             (document.getElementById('note') as HTMLInputElement).focus();
         });
-        document.getElementById('saveNote').addEventListener('click', () => {
+        (document.getElementById('saveNote') as HTMLButtonElement).addEventListener('click', () => {
             this.saveNote();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,18 +28,18 @@ class AddNote {
                 this.saveNote();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-addNote');
+                ipcRenderer.send('close-addNote');
             }
         });
-        this.electron.ipcRenderer.send('addNote-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('addNote-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     saveNote(): void {
         let note: string = (document.getElementById('note') as HTMLInputElement).value;
         if (note === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'addNote', key: 'enterNote', parent: 'addNote' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'addNote', key: 'enterNote', parent: 'addNote' });
             return;
         }
-        this.electron.ipcRenderer.send('add-new-note', note);
+        ipcRenderer.send('add-new-note', note);
     }
 }

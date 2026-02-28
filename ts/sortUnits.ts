@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,26 +10,27 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class SortUnits {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class SortUnits {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('sort-options', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('sort-options', (event: Electron.IpcRendererEvent, arg: any) => {
             this.sortOptions(arg);
         });
-        document.getElementById('sort').addEventListener('click', () => {
+        (document.getElementById('sort') as HTMLButtonElement).addEventListener('click', () => {
             this.sort();
         });
-        document.getElementById('clearSort').addEventListener('click', () => {
+        (document.getElementById('clearSort') as HTMLButtonElement).addEventListener('click', () => {
             this.clearSort();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -40,8 +41,8 @@ class SortUnits {
                 this.clearSort();
             }
         });
-        document.getElementById('sortLanguage').focus();
-        this.electron.ipcRenderer.send('sortUnits-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('sortLanguage') as HTMLSelectElement).focus();
+        ipcRenderer.send('sortUnits-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -51,7 +52,7 @@ class SortUnits {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         sortLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('get-sort');
+        ipcRenderer.send('get-sort');
     }
 
     sortOptions(arg: any): void {
@@ -66,10 +67,10 @@ class SortUnits {
     sort(): void {
         let language: string = (document.getElementById('sortLanguage') as HTMLSelectElement).value;
         let desc: boolean = (document.getElementById('descending') as HTMLInputElement).checked;
-        this.electron.ipcRenderer.send('set-sort', { sortLanguage: language, ascending: !desc });
+        ipcRenderer.send('set-sort', { sortLanguage: language, ascending: !desc });
     }
 
     clearSort(): void {
-        this.electron.ipcRenderer.send('clear-sort');
+        ipcRenderer.send('clear-sort');
     }
 }

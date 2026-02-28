@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,21 +10,22 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class SearchReplace {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require("electron");
+export class SearchReplace {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
         
-        document.getElementById('replace').addEventListener('click', () => {
+        (document.getElementById('replace') as HTMLButtonElement).addEventListener('click', () => {
             this.replace();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -32,11 +33,11 @@ class SearchReplace {
                 this.replace();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-replaceText');
+                ipcRenderer.send('close-replaceText');
             }
         });
-        document.getElementById('searchText').focus();
-        this.electron.ipcRenderer.send('replaceText-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('searchText') as HTMLInputElement).focus();
+        ipcRenderer.send('replaceText-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -53,14 +54,14 @@ class SearchReplace {
         let replaceText: string = (document.getElementById('replaceText') as HTMLInputElement).value;
         let language: string = (document.getElementById('language') as HTMLSelectElement).value;
         if (searchText.length === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'searchReplace', key: 'enterSearchText', parent: 'searchReplace' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'searchReplace', key: 'enterSearchText', parent: 'searchReplace' });
             return;
         }
         if (replaceText.length === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'searchReplace', key: 'enterReplaceText', parent: 'searchReplace' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'searchReplace', key: 'enterReplaceText', parent: 'searchReplace' });
             return;
         }
         let regularExpression: boolean = (document.getElementById('regularExpression') as HTMLInputElement).checked;
-        this.electron.ipcRenderer.send('replace-request', { search: searchText, replace: replaceText, lang: language, regExp: regularExpression });
+        ipcRenderer.send('replace-request', { search: searchText, replace: replaceText, lang: language, regExp: regularExpression });
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,40 +10,42 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Properties {
+import { ipcRenderer } from "electron";
+
+export class Properties {
 
     electron = require('electron');
 
-    currentId: string;
-    currentType: string;
-    properties: Array<string[]>;
+    currentId: string = '';
+    currentType: string = '';
+    properties: Array<string[]> = [];
     removePropertiesText: string = '';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-unit-properties');
-        this.electron.ipcRenderer.on('set-unit-properties', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.send('get-unit-properties');
+        ipcRenderer.on('set-unit-properties', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setUnitProperties(arg);
         });
-        this.electron.ipcRenderer.on('set-new-property', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-new-property', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setNewProperty(arg);
         });
-        document.getElementById('addProperty').addEventListener('click', () => {
+        (document.getElementById('addProperty') as HTMLButtonElement).addEventListener('click', () => {
             this.addProperty();
         });
-        document.getElementById('save').addEventListener('click', () => {
+        (document.getElementById('save') as HTMLButtonElement).addEventListener('click', () => {
             this.saveProperties();
         });
 
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-properties');
+                ipcRenderer.send('close-properties');
             }
         });
-        this.electron.ipcRenderer.send('properties-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('properties-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     setUnitProperties(arg: any): void {
@@ -61,11 +63,11 @@ class Properties {
             lang: lang,
             properties: this.properties
         }
-        this.electron.ipcRenderer.send('save-properties', arg);
+        ipcRenderer.send('save-properties', arg);
     }
 
     addProperty(): void {
-        this.electron.ipcRenderer.send('show-add-property', 'properties');
+        ipcRenderer.send('show-add-property', 'properties');
     }
 
     setNewProperty(arg: any): void {

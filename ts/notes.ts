@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,45 +10,45 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Notes {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class Notes {
 
-    currentId: string;
-    currentType: string;
-    notes: string[];
+    currentId: string = '';
+    currentType: string = '';
+    notes: string[] = [];
     removeNotesText: string = '';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-unit-notes');
-        this.electron.ipcRenderer.on('set-unit-notes', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.send('get-unit-notes');
+        ipcRenderer.on('set-unit-notes', (event: Electron.IpcRendererEvent, arg: any) => {
             this.currentId = arg.id;
             this.currentType = arg.type;
             this.notes = arg.notes;
             this.removeNotesText = arg.removeText;
             this.drawNotes();
         });
-        this.electron.ipcRenderer.on('set-new-note', (event: Electron.IpcRendererEvent, note: string) => {
+        ipcRenderer.on('set-new-note', (event: Electron.IpcRendererEvent, note: string) => {
             this.notes.push(note);
             this.drawNotes();
             (document.getElementById('save') as HTMLButtonElement).focus();
         });
-        document.getElementById('add').addEventListener('click', () => {
+        (document.getElementById('add') as HTMLButtonElement).addEventListener('click', () => {
             this.addNote();
         });
-        document.getElementById('save').addEventListener('click', () => {
+        (document.getElementById('save') as HTMLButtonElement).addEventListener('click', () => {
             this.saveNotes();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-notes');
+                ipcRenderer.send('close-notes');
             }
         });
-        this.electron.ipcRenderer.send('notes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('notes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     drawNotes(): void {
@@ -87,11 +87,11 @@ class Notes {
             lang: lang,
             notes: this.notes
         }
-        this.electron.ipcRenderer.send('save-notes', arg);
+        ipcRenderer.send('save-notes', arg);
     }
 
     addNote(): void {
-        this.electron.ipcRenderer.send('show-add-note');
+        ipcRenderer.send('show-add-note');
     }
 
     deleteNotes(i: number): void {

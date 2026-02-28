@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Convertir un fichier SDLTM en TMX</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new ConvertSDLTM();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr>
@@ -29,7 +29,10 @@
         <button id="convert">Convertir le fichier en TMX</button>
     </div>
 
-    <script src="../../js/convertSDLTM.js"></script>
+    <script>
+        const { ConvertSDLTM } = require('../../js/convertSDLTM.js');
+        new ConvertSDLTM();
+    </script>
 </body>
 
 </html>

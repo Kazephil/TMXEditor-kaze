@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new ConvertCSV();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr>
@@ -79,7 +79,10 @@
         <button id="convert">Convert CSV File to TMX</button>
     </div>
 
-    <script src="../../js/convertCSV.js"></script>
+    <script>
+        const { ConvertCSV } = require('../../js/convertCSV.js');
+        new ConvertCSV();
+    </script>
 </body>
 
 </html>

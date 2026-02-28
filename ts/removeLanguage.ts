@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,21 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class RemoveLanguage {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class RemoveLanguage {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        document.getElementById('removeLanguage').addEventListener('click', () => {
+        (document.getElementById('removeLanguage') as HTMLButtonElement).addEventListener('click', () => {
             this.removeLanguage();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,11 +32,11 @@ class RemoveLanguage {
                 this.removeLanguage();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-removeLanguage');
+                ipcRenderer.send('close-removeLanguage');
             }
         });
-        document.getElementById('language').focus();
-        this.electron.ipcRenderer.send('removeLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('language') as HTMLSelectElement).focus();
+        ipcRenderer.send('removeLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -49,6 +50,6 @@ class RemoveLanguage {
 
     removeLanguage(): void {
         let language: HTMLSelectElement = document.getElementById('language') as HTMLSelectElement;
-        this.electron.ipcRenderer.send('remove-language', language.value);
+        ipcRenderer.send('remove-language', language.value);
     }
 }

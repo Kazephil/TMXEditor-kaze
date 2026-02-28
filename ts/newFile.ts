@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,21 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class NewFile {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class NewFile {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('all-languages');
-        this.electron.ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('all-languages');
+        ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.languagesList(arg);
         });
-        document.getElementById('createFile').addEventListener('click', () => {
+        (document.getElementById('createFile') as HTMLButtonElement).addEventListener('click', () => {
             this.createFile();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,10 +32,10 @@ class NewFile {
                 this.createFile();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-newFile');
+                ipcRenderer.send('close-newFile');
             }
         });
-        this.electron.ipcRenderer.send('newFile-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('newFile-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     languagesList(langs: Language[]): void {
@@ -52,17 +53,17 @@ class NewFile {
         let srcLanguage: HTMLSelectElement = document.getElementById('srcLanguage') as HTMLSelectElement;
         let tgtLanguage: HTMLSelectElement = document.getElementById('tgtLanguage') as HTMLSelectElement;
         if (srcLanguage.value === 'none') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectSrcLanguageWarning', parent: 'newFile' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectSrcLanguageWarning', parent: 'newFile' });
             return;
         }
         if (tgtLanguage.value === 'none') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectTgtLanguageWarning', parent: 'newFile' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectTgtLanguageWarning', parent: 'newFile' });
             return;
         }
         if (srcLanguage.value === tgtLanguage.value) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectDifferentLanguages', parent: 'newFile' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'newFile', key: 'selectDifferentLanguages', parent: 'newFile' });
             return;
         }
-        this.electron.ipcRenderer.send('create-file', { srcLang: srcLanguage.value, tgtLang: tgtLanguage.value });
+        ipcRenderer.send('create-file', { srcLang: srcLanguage.value, tgtLang: tgtLanguage.value });
     }
 }

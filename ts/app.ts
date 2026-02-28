@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -15,11 +15,14 @@ import { BrowserWindow, ClientRequest, IpcMainEvent, Menu, MenuItem, MessageBoxR
 import { IncomingMessage } from "electron/main";
 import { appendFileSync, existsSync, mkdirSync, readFile, readFileSync, rmSync, unlinkSync, writeFile, writeFileSync } from "fs";
 import path from "path";
-import { TMReader } from "sdltm";
+import { join } from 'node:path';
+import { TMReader, TMReaderResult } from "sdltm";
 import { LanguageUtils } from "typesbcp47";
-import { I18n } from "./i18n";
-import { Locations, Point } from "./locations";
-import { Tbx2Tmx } from "./tbx2tmx";
+import { I18n } from "./i18n.js";
+import { Language } from "./language.js";
+import { Locations, Point } from "./locations.js";
+import { Preferences } from "./preferences.js";
+import { Tbx2Tmx } from "./tbx2tmx.js";
 
 const SUCCESS: string = 'Success';
 const LOADING: string = 'Loading';
@@ -33,7 +36,6 @@ class App {
 
     static mainWindow: BrowserWindow;
     static newFileWindow: BrowserWindow;
-    static messagesWindow: BrowserWindow;
     static aboutWindow: BrowserWindow;
     static licensesWindow: BrowserWindow;
     static settingsWindow: BrowserWindow;
@@ -64,11 +66,6 @@ class App {
     static convertExcelWindow: BrowserWindow;
     static excelLanguagesWindow: BrowserWindow;
     static systemInfoWindow: BrowserWindow;
-
-    static requestEvaluationWindow: BrowserWindow;
-    static registerSubscriptionWindow: BrowserWindow;
-    static registerExpiredWindow: BrowserWindow;
-    static newSubscriptionWindow: BrowserWindow;
 
     ls: ChildProcessWithoutNullStreams;
     stopping: boolean = false;
@@ -176,7 +173,7 @@ class App {
             }
         });
 
-        app.on('before-quit', (event: Event) => {
+        app.on('before-quit', (event) => {
             if (!App.saved) {
                 event.preventDefault();
                 App.close();
@@ -216,7 +213,7 @@ class App {
                 App.saveDefaults();
             });
             App.mainWindow.show();
-            App.mainWindow.on('close', (ev: Event) => {
+            App.mainWindow.on('close', (ev) => {
                 ev.preventDefault();
                 App.close();
             });
@@ -244,8 +241,8 @@ class App {
             for (let window of windows) {
                 window.webContents.send('set-theme', App.currentCss);
             }
+            App.createMenu();
         });
-
         ipcMain.on('get-tooltips', (event: IpcMainEvent) => {
             App.sendTooltips(event);
         });
@@ -291,7 +288,6 @@ class App {
         ipcMain.on('get-lang-attributes-text', (event: IpcMainEvent) => {
             let attributesArg = App.attributesArg;
             let attributesLabel: string = App.i18n.getString('App', 'langAttributes');
-            console.log(JSON.stringify(attributesArg));
             event.sender.send('set-lang-attributes-text', App.i18n.format(attributesLabel, [attributesArg.type]));
         });
         ipcMain.on('save-attributes', (event: IpcMainEvent, arg: any) => {
@@ -552,12 +548,6 @@ class App {
         ipcMain.on('get-system-info', (event: IpcMainEvent) => {
             App.getSystemInformation(event);
         });
-        ipcMain.on('messages-height', (event: IpcMainEvent, arg: { width: number, height: number }) => {
-            App.setHeight(App.messagesWindow, arg);
-        });
-        ipcMain.on('close-messages', () => {
-            App.messagesWindow.close();
-        });
         ipcMain.on('fileInfo-height', (event: IpcMainEvent, arg: { width: number, height: number }) => {
             App.setHeight(App.fileInfoWindow, arg);
         });
@@ -802,6 +792,9 @@ class App {
             'tuAttributes': App.i18n.getString('App', 'tuAttributes'),
             'tuProperties': App.i18n.getString('App', 'tuProperties'),
             'tuNotes': App.i18n.getString('App', 'tuNotes'),
+            'editAttributes': App.i18n.getString('menu', 'EditAttributes'),
+            'editProperties': App.i18n.getString('menu', 'EditProperties'),
+            'editNotes': App.i18n.getString('menu', 'EditNotes'),
         };
         event.sender.send('set-tooltips', tooltips);
     }
@@ -813,14 +806,6 @@ class App {
                 case 'preferences': parent = App.settingsWindow;
                     break;
                 case 'replaceText': parent = App.replaceTextWindow;
-                    break;
-                case 'requestEvaluation': parent = App.requestEvaluationWindow;
-                    break;
-                case 'registerSubscription': parent = App.registerSubscriptionWindow;
-                    break;
-                case 'registerExpired': parent = App.registerExpiredWindow;
-                    break;
-                case 'registerNewSubscription': parent = App.newSubscriptionWindow;
                     break;
                 case 'addNote': parent = App.addNotesWindow;
                     break;
@@ -887,23 +872,28 @@ class App {
             show: false,
             icon: App.iconPath
         });
+        App.createMenu();
+    }
+
+    static createMenu(): void {
+        const iconFolder: string = nativeTheme.shouldUseHighContrastColors ? 'dark' : (nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
         let fileMenu: Menu = Menu.buildFromTemplate([
-            { label: App.i18n.getString('menu', 'New'), accelerator: 'CmdOrCtrl+N', click: () => { App.createNewFile(); } },
-            { label: App.i18n.getString('menu', 'Open'), accelerator: 'CmdOrCtrl+O', click: () => { App.openFileDialog(); } },
+            { label: App.i18n.getString('menu', 'New'), accelerator: 'CmdOrCtrl+N', click: () => { App.createNewFile(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'new.png') },
+            { label: App.i18n.getString('menu', 'Open'), accelerator: 'CmdOrCtrl+O', click: () => { App.openFileDialog(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'open.png') },
             { label: App.i18n.getString('menu', 'Close'), accelerator: 'CmdOrCtrl+W', click: () => { App.closeFile(); } },
-            { label: App.i18n.getString('menu', 'Save'), accelerator: 'CmdOrCtrl+s', click: () => { App.saveFile(); } },
+            { label: App.i18n.getString('menu', 'Save'), accelerator: 'CmdOrCtrl+s', click: () => { App.saveFile(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'save.png') },
             { label: App.i18n.getString('menu', 'SaveAs'), click: () => { App.saveAs() } },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'ConvertExcel'), click: () => { App.convertExcel(); } },
+            { label: App.i18n.getString('menu', 'ConvertExcel'), click: () => { App.convertExcel(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'convertExcel.png') },
             { label: App.i18n.getString('menu', 'ExportExcel'), click: () => { App.exportExcel(); } },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'ConvertCSV'), click: () => { App.convertCSV(); } },
+            { label: App.i18n.getString('menu', 'ConvertCSV'), click: () => { App.convertCSV(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'convertCSV.png') },
             { label: App.i18n.getString('menu', 'ExportCSV'), click: () => { App.exportDelimited(); } },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'ConvertSDLTM'), click: () => { App.convertSDLTM(); } },
-            { label: App.i18n.getString('menu', 'ConvertTBX'), click: () => { App.convertTBX(); } },
+            { label: App.i18n.getString('menu', 'ConvertSDLTM'), click: () => { App.convertSDLTM(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'convertSDLTM.png') },
+            { label: App.i18n.getString('menu', 'ConvertTBX'), click: () => { App.convertTBX(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'convertTBX.png') },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'FileProperties'), click: () => { App.showFileInfo(); } },
+            { label: App.i18n.getString('menu', 'FileProperties'), click: () => { App.showFileInfo(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'fileInfo.png') },
             new MenuItem({ type: 'separator' }),
             { label: App.i18n.getString('menu', 'ValidateTMX'), click: () => { App.validateFile(); } },
             { label: App.i18n.getString('menu', 'CleanInvalidChars'), click: () => { App.cleanCharacters(); } },
@@ -912,36 +902,39 @@ class App {
             { label: App.i18n.getString('menu', 'MergeTMX'), click: () => { App.mergeFiles(); } }
         ]);
         let editMenu: Menu = Menu.buildFromTemplate([
-            { label: App.i18n.getString('menu', 'Undo'), accelerator: 'CmdOrCtrl+Z', click: () => { BrowserWindow.getFocusedWindow().webContents.undo(); } },
+            { label: App.i18n.getString('menu', 'EditAttributes'), click: () => { App.editAttributes(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'edit.png') },
+            { label: App.i18n.getString('menu', 'EditProperties'), click: () => { App.editProperties(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'edit.png') },
+            { label: App.i18n.getString('menu', 'EditNotes'), click: () => { App.editNotes(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'edit.png') },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'Cut'), accelerator: 'CmdOrCtrl+X', click: () => { BrowserWindow.getFocusedWindow().webContents.cut(); } },
-            { label: App.i18n.getString('menu', 'Copy'), accelerator: 'CmdOrCtrl+C', click: () => { BrowserWindow.getFocusedWindow().webContents.copy(); } },
-            { label: App.i18n.getString('menu', 'Paste'), accelerator: 'CmdOrCtrl+V', click: () => { BrowserWindow.getFocusedWindow().webContents.paste(); } },
-            { label: App.i18n.getString('menu', 'SelectAll'), accelerator: 'CmdOrCtrl+A', click: () => { BrowserWindow.getFocusedWindow().webContents.selectAll(); } },
+            { label: App.i18n.getString('menu', 'ConfirmEdit'), accelerator: 'Alt+Enter', click: () => { App.saveEdits(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'confirmEdit.png') },
+            { label: App.i18n.getString('menu', 'CancelEdit'), accelerator: 'Esc', click: () => { App.cancelEdit(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'cancelEdit.png') },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'ConfirmEdit'), accelerator: 'Alt+Enter', click: () => { App.saveEdits(); } },
-            { label: App.i18n.getString('menu', 'CancelEdit'), accelerator: 'Esc', click: () => { App.cancelEdit(); } },
+            { label: App.i18n.getString('menu', 'ReplaceText'), accelerator: 'CmdOrCtrl+F', click: () => { App.replaceText(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'replaceText.png') },
+            { label: App.i18n.getString('menu', 'InsertUnit'), click: () => { App.insertUnit(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'insertUnit.png') },
+            { label: App.i18n.getString('menu', 'DeleteSelected'), click: () => { App.requestDeleteUnits(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'deleteUnit.png') },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'ReplaceText'), accelerator: 'CmdOrCtrl+F', click: () => { App.replaceText(); } },
+            { label: App.i18n.getString('menu', 'Undo'), accelerator: 'CmdOrCtrl+Z', click: () => { BrowserWindow.getFocusedWindow()?.webContents.undo(); } },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'InsertUnit'), click: () => { App.insertUnit(); } },
-            { label: App.i18n.getString('menu', 'DeleteSelected'), click: () => { App.requestDeleteUnits(); } }
+            { label: App.i18n.getString('menu', 'Cut'), accelerator: 'CmdOrCtrl+X', click: () => { BrowserWindow.getFocusedWindow()?.webContents.cut(); } },
+            { label: App.i18n.getString('menu', 'Copy'), accelerator: 'CmdOrCtrl+C', click: () => { BrowserWindow.getFocusedWindow()?.webContents.copy(); } },
+            { label: App.i18n.getString('menu', 'Paste'), accelerator: 'CmdOrCtrl+V', click: () => { BrowserWindow.getFocusedWindow()?.webContents.paste(); } },
+            { label: App.i18n.getString('menu', 'SelectAll'), accelerator: 'CmdOrCtrl+A', click: () => { BrowserWindow.getFocusedWindow()?.webContents.selectAll(); } }
         ]);
         let viewMenu: Menu = Menu.buildFromTemplate([
-            { label: App.i18n.getString('menu', 'SortUnits'), accelerator: 'F5', click: () => { App.sortUnits(); } },
-            { label: App.i18n.getString('menu', 'FilterUnits'), accelerator: 'F3', click: () => { App.showFilters() } },
+            { label: App.i18n.getString('menu', 'SortUnits'), accelerator: 'F5', click: () => { App.sortUnits(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'sort.png') },
+            { label: App.i18n.getString('menu', 'FilterUnits'), accelerator: 'F3', click: () => { App.showFilters() }, icon: join(app.getAppPath(), 'images', iconFolder, 'filter.png') },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'FirstPage'), accelerator: 'CmdOrCtrl+Shift+PageUp', click: () => { App.firstPage(); } },
-            { label: App.i18n.getString('menu', 'PreviousPage'), accelerator: 'CmdOrCtrl+PageUp', click: () => { App.previousPage(); } },
-            { label: App.i18n.getString('menu', 'NextPage'), accelerator: 'CmdOrCtrl+PageDown', click: () => { App.nextPage(); } },
-            { label: App.i18n.getString('menu', 'LastPage'), accelerator: 'CmdOrCtrl+Shift+PageDown', click: () => { App.lastPage(); } },
+            { label: App.i18n.getString('menu', 'FirstPage'), accelerator: 'CmdOrCtrl+Shift+PageUp', click: () => { App.firstPage(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'firstPage.png') },
+            { label: App.i18n.getString('menu', 'PreviousPage'), accelerator: 'CmdOrCtrl+PageUp', click: () => { App.previousPage(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'previousPage.png') },
+            { label: App.i18n.getString('menu', 'NextPage'), accelerator: 'CmdOrCtrl+PageDown', click: () => { App.nextPage(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'nextPage.png') },
+            { label: App.i18n.getString('menu', 'LastPage'), accelerator: 'CmdOrCtrl+Shift+PageDown', click: () => { App.lastPage(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'lastPage.png') },
             new MenuItem({ type: 'separator' }),
             new MenuItem({ label: App.i18n.getString('menu', 'ToggleFullScreen'), role: 'togglefullscreen' })
         ]);
         if (!app.isPackaged) {
             viewMenu.append(new MenuItem({
                 label: App.i18n.getString('menu', 'ToggleDeveloperTools'), accelerator: 'F12', role: 'toggleDevTools', click: () => {
-                    BrowserWindow.getFocusedWindow().webContents.toggleDevTools();
+                    BrowserWindow.getFocusedWindow()?.webContents.toggleDevTools();
                 }
             }));
         }
@@ -951,7 +944,7 @@ class App {
             { label: App.i18n.getString('menu', 'RemoveLanguage'), click: () => { App.showRemoveLanguage() } },
             { label: App.i18n.getString('menu', 'ChangeSourceLanguage'), click: () => { App.showChangeSourceLanguage(); } },
             new MenuItem({ type: 'separator' }),
-            { label: App.i18n.getString('menu', 'MaintenanceDashboard'), click: () => { App.showMaintenanceDashboard(); } },
+            { label: App.i18n.getString('menu', 'MaintenanceDashboard'), click: () => { App.showMaintenanceDashboard(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'maintenance.png') },
             new MenuItem({ type: 'separator' }),
             { label: App.i18n.getString('menu', 'RemoveTags'), click: () => { App.removeTags(); } },
             { label: App.i18n.getString('menu', 'RemoveDuplicates'), click: () => { App.removeDuplicates(); } },
@@ -961,7 +954,7 @@ class App {
             { label: App.i18n.getString('menu', 'ConsolidateUnits'), click: () => { App.showConsolidateUnits(); } }
         ]);
         let helpMenu: Menu = Menu.buildFromTemplate([
-            { label: App.i18n.getString('menu', 'UserGuide'), accelerator: 'F1', click: () => { App.showHelp(); } },
+            { label: App.i18n.getString('menu', 'UserGuide'), accelerator: 'F1', click: () => { App.showHelp(); }, icon: join(app.getAppPath(), 'images', iconFolder, 'help.png') },
             new MenuItem({ type: 'separator' }),
             { label: App.i18n.getString('menu', 'CheckForUpdates'), click: () => { App.checkUpdates(false); } },
             { label: App.i18n.getString('menu', 'ViewLicenses'), click: () => { App.showLicenses({ from: 'menu' }); } },
@@ -1650,7 +1643,6 @@ class App {
                     data.notesType = App.i18n.getString('App', 'tuNotes');
                     App.mainWindow.webContents.send('update-properties', data);
                 } else {
-                    console.log(id, JSON.stringify(data));
                     App.showMessage({ type: 'error', message: data.reason });
                 }
             },
@@ -1772,7 +1764,7 @@ class App {
             App.addPropertyWindow.show();
         });
         App.addPropertyWindow.on('close', () => {
-            App.addPropertyWindow.getParentWindow().focus();
+            App.addPropertyWindow.getParentWindow()?.focus();
         });
         App.setLocation(App.addPropertyWindow, 'addProperty.html');
     }
@@ -1863,13 +1855,13 @@ class App {
             App.addNotesWindow.show();
         });
         App.addNotesWindow.on('close', () => {
-            App.addNotesWindow.getParentWindow().focus();
+            App.addNotesWindow.getParentWindow()?.focus();
         });
         App.setLocation(App.addNotesWindow, 'addNote.html');
     }
 
     addNewNote(note: string): void {
-        App.addNotesWindow.getParentWindow().webContents.send('set-new-note', note);
+        App.addNotesWindow.getParentWindow()?.webContents.send('set-new-note', note);
         App.addNotesWindow.close();
     }
 
@@ -2224,15 +2216,17 @@ class App {
         App.convertTBXWindow.close();
         App.mainWindow.webContents.send('set-status', App.i18n.getString('App', 'Converting'));
         try {
-            let converter: Tbx2Tmx = new Tbx2Tmx(app.getName(), app.getVersion());
+            let converter: Tbx2Tmx = new Tbx2Tmx(app.getName(), app.getVersion(), path.join(app.getAppPath(), 'i18n', 'tmxeditor_' + App.lang + '.json'));
             converter.convert(arg.tbxFile, arg.tmxFile);
+            App.mainWindow.webContents.send('set-status', App.i18n.getString('App', ''));
             if (arg.openTMX) {
                 if (App.currentFile !== '') {
                     App.closeFile();
                 }
                 App.openFile(arg.tmxFile);
             }
-        } catch (err) {
+        } catch (err: unknown) {
+            App.mainWindow.webContents.send('set-status', App.i18n.getString('App', ''));
             console.error(err);
             if (err instanceof Error) {
                 App.showMessage({ type: 'error', message: err.message });
@@ -2243,32 +2237,32 @@ class App {
     convertSdltmTmx(arg: any): void {
         App.convertSDLTMWindow.close();
         App.mainWindow.webContents.send('set-status', App.i18n.getString('App', 'Converting'));
-        try {
-            new TMReader(arg.sdltmFile, arg.tmxFile, { productName: app.name, version: app.getVersion() }, (data: any) => {
-                App.mainWindow.webContents.send('set-status', '');
-                if (data.status === SUCCESS) {
-                    if (arg.openTMX) {
-                        if (App.currentFile !== '') {
-                            App.closeFile();
-                        }
-                        App.openFile(arg.tmxFile);
-                    } else {
-                        App.showMessage({
-                            type: 'info',
-                            message: App.i18n.format(App.i18n.getString('App', 'convertedEntries'), [data.count])
-                        });
+        const reader: TMReader = new TMReader({ 'productName': app.getName(), 'version': app.getVersion() });
+        reader.convert(arg.sdltmFile, arg.tmxFile).then((result: TMReaderResult) => {
+            App.mainWindow.webContents.send('end-waiting');
+            App.mainWindow.webContents.send('set-status', App.i18n.getString('App', ''));
+            if (result.status === SUCCESS) {
+                if (arg.openTMX) {
+                    if (App.currentFile !== '') {
+                        App.closeFile();
                     }
+                    App.openFile(arg.tmxFile);
+                } else {
+                    App.showMessage({
+                        type: 'info',
+                        message: App.i18n.format(App.i18n.getString('App', 'convertedEntries'), ['' + result.count])
+                    });
                 }
-                if (data.status === ERROR) {
-                    App.showMessage({ type: 'error', message: data.reason });
-                }
-            });
-        } catch (err) {
+            }
+        }).catch((err: any) => {
+            console.error(err);
+            App.mainWindow.webContents.send('end-waiting');
+            App.mainWindow.webContents.send('set-status', App.i18n.getString('App', ''));
             console.error(err);
             if (err instanceof Error) {
                 App.showMessage({ type: 'error', message: err.message });
             }
-        }
+        });
     }
 
     convertExcelTmx(arg: any): void {
@@ -2440,7 +2434,6 @@ class App {
             labels.push(App.i18n.format(label, ['' + (i + 1)]));
         }
         App.csvLangArgs.labels = labels;
-        console.log(App.csvLangArgs);
         App.csvLanguagesWindow = new BrowserWindow({
             parent: App.convertCsvWindow,
             modal: false,
@@ -4183,8 +4176,10 @@ class App {
 
     static setLocation(window: BrowserWindow, key: string): void {
         if (App.locations.hasLocation(key)) {
-            let position: Point = App.locations.getLocation(key);
-            window.setPosition(position.x, position.y, true);
+            let position: Point | undefined = App.locations.getLocation(key);
+            if (position) {
+                window.setPosition(position.x, position.y, true);
+            }
         }
         window.addListener('moved', () => {
             let bounds: Rectangle = window.getBounds();
@@ -4261,6 +4256,17 @@ class App {
         });
     }
 
+    static editAttributes(): void {
+        App.mainWindow.webContents.send('edit-attributes');
+    }
+
+    static editProperties(): void {
+        App.mainWindow.webContents.send('edit-properties');
+    }
+
+    static editNotes(): void {
+        App.mainWindow.webContents.send('edit-notes');
+    }
 }
 
 try {

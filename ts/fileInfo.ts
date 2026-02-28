@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,65 +10,67 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class FileInfo {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class FileInfo {
+
     adminLang: string = '';
-    properties: Array<string[]>;
-    notes: string[];
-    notesChecks: HTMLInputElement[];
+    properties: Array<string[]> = [];
+    notes: string[] = [];
+    notesChecks: HTMLInputElement[] = [];
 
     removePropertiesText: string = '';
     removeNotesText: string = '';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('file-properties');
-        this.electron.ipcRenderer.on('set-file-properties', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.send('file-properties');
+        ipcRenderer.on('set-file-properties', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setFileProperties(arg);
         });
-        this.electron.ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.setAdminLanguages(arg);
         });
-        document.getElementById('showAttributes').addEventListener('click', () => {
+        (document.getElementById('showAttributes') as HTMLButtonElement).addEventListener('click', () => {
             this.showAttributes();
         });
-        document.getElementById('showProperties').addEventListener('click', () => {
+        (document.getElementById('showProperties') as HTMLButtonElement).addEventListener('click', () => {
             this.showProperties();
-        })
-        document.getElementById('showNotes').addEventListener('click', () => {
+        });
+        (document.getElementById('showNotes') as HTMLButtonElement).addEventListener('click', () => {
             this.showNotes();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-fileInfo');
+                ipcRenderer.send('close-fileInfo');
             }
         });
-        document.getElementById('saveAttributes').addEventListener('click', () => {
+        (document.getElementById('saveAttributes') as HTMLButtonElement).addEventListener('click', () => {
             this.saveAttributes();
         });
-        document.getElementById('addProperty').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('show-add-property', 'fileInfo');
+        (document.getElementById('addProperty') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('show-add-property', 'fileInfo');
         });
-        this.electron.ipcRenderer.on('set-new-property', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-new-property', (event: Electron.IpcRendererEvent, arg: any) => {
             let prop: string[] = [arg.type, arg.value];
             this.properties.push(prop);
             this.drawProperties();
         });
-        document.getElementById('saveProperties').addEventListener('click', () => {
+        (document.getElementById('saveProperties') as HTMLButtonElement).addEventListener('click', () => {
             this.saveProperties();
         });
-        document.getElementById('addNote').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('show-add-note', 'fileInfo');
+        (document.getElementById('addNote') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('show-add-note', 'fileInfo');
         });
-        this.electron.ipcRenderer.on('set-new-note', (event: Electron.IpcRendererEvent, note: string) => {
+        ipcRenderer.on('set-new-note', (event: Electron.IpcRendererEvent, note: string) => {
             this.notes.push(note);
             this.drawNotes();
         });
-        document.getElementById('saveNotes').addEventListener('click', () => {
+        (document.getElementById('saveNotes') as HTMLButtonElement).addEventListener('click', () => {
             this.saveNotes();
         });
     }
@@ -85,10 +87,10 @@ class FileInfo {
         adminLangSelect.value = this.adminLang;
 
         setTimeout(() => {
-            this.electron.ipcRenderer.send('fileInfo-height', { width: document.body.clientWidth, height: document.body.clientHeight });
-            document.getElementById('properties').style.height = document.getElementById('attributes').clientHeight + 'px';
-            document.getElementById('notes').style.height = document.getElementById('attributes').clientHeight + 'px';
-            document.getElementById('attributes').style.height = document.getElementById('attributes').clientHeight + 'px';
+            ipcRenderer.send('fileInfo-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+            (document.getElementById('properties') as HTMLDivElement).style.height = (document.getElementById('attributes') as HTMLDivElement).clientHeight + 'px';
+            (document.getElementById('notes') as HTMLDivElement).style.height = (document.getElementById('attributes') as HTMLDivElement).clientHeight + 'px';
+            (document.getElementById('attributes') as HTMLDivElement).style.height = (document.getElementById('attributes') as HTMLDivElement).clientHeight + 'px';
         }, 150);
     }
 
@@ -107,7 +109,7 @@ class FileInfo {
         srcLangSelect.value = arg.attributes.srclang;
         this.adminLang = arg.attributes.adminlang
 
-        this.electron.ipcRenderer.send('all-languages');
+        ipcRenderer.send('all-languages');
 
         (document.getElementById('creationid') as HTMLInputElement).value = arg.attributes.creationid;
         (document.getElementById('creationdate') as HTMLInputElement).value = arg.attributes.creationdate;
@@ -191,72 +193,72 @@ class FileInfo {
     }
 
     showAttributes(): void {
-        document.getElementById('atributesTab').classList.add('selectedTab');
-        document.getElementById('attributes').classList.remove('hidden');
-        document.getElementById('attributes').classList.add('tabContent');
+        (document.getElementById('atributesTab') as HTMLDivElement).classList.add('selectedTab');
+        (document.getElementById('attributes') as HTMLDivElement).classList.remove('hidden');
+        (document.getElementById('attributes') as HTMLDivElement).classList.add('tabContent');
 
-        document.getElementById('propertiesTab').classList.remove('selectedTab');
-        document.getElementById('properties').classList.remove('tabContent');
-        document.getElementById('properties').classList.add('hidden');
+        (document.getElementById('propertiesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('properties') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('properties') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('notesTab').classList.remove('selectedTab');
-        document.getElementById('notes').classList.remove('tabContent');
-        document.getElementById('notes').classList.add('hidden');
+        (document.getElementById('notesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('notes') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('notes') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('attributesButtons').classList.add('buttonArea');
-        document.getElementById('attributesButtons').classList.remove('hidden');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.add('buttonArea');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.remove('hidden');
 
-        document.getElementById('propButtons').classList.add('hidden');
-        document.getElementById('propButtons').classList.remove('buttonArea');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.add('hidden');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.remove('buttonArea');
 
-        document.getElementById('notesButtons').classList.add('hidden');
-        document.getElementById('notesButtons').classList.remove('buttonArea');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.add('hidden');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.remove('buttonArea');
     }
 
     showProperties(): void {
-        document.getElementById('propertiesTab').classList.add('selectedTab');
-        document.getElementById('properties').classList.remove('hidden');
-        document.getElementById('properties').classList.add('tabContent');
+        (document.getElementById('propertiesTab') as HTMLDivElement).classList.add('selectedTab');
+        (document.getElementById('properties') as HTMLDivElement).classList.remove('hidden');
+        (document.getElementById('properties') as HTMLDivElement).classList.add('tabContent');
 
-        document.getElementById('atributesTab').classList.remove('selectedTab');
-        document.getElementById('attributes').classList.remove('tabContent');
-        document.getElementById('attributes').classList.add('hidden');
+        (document.getElementById('atributesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('attributes') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('attributes') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('notesTab').classList.remove('selectedTab');
-        document.getElementById('notes').classList.remove('tabContent');
-        document.getElementById('notes').classList.add('hidden');
+        (document.getElementById('notesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('notes') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('notes') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('attributesButtons').classList.remove('buttonArea');
-        document.getElementById('attributesButtons').classList.add('hidden');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.remove('buttonArea');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('propButtons').classList.remove('hidden');
-        document.getElementById('propButtons').classList.add('buttonArea');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.remove('hidden');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.add('buttonArea');
 
-        document.getElementById('notesButtons').classList.add('hidden');
-        document.getElementById('notesButtons').classList.remove('buttonArea');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.add('hidden');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.remove('buttonArea');
     }
 
     showNotes(): void {
-        document.getElementById('notesTab').classList.add('selectedTab');
-        document.getElementById('notes').classList.add('tabContent');
-        document.getElementById('notes').classList.remove('hidden');
+        (document.getElementById('notesTab') as HTMLDivElement).classList.add('selectedTab');
+        (document.getElementById('notes') as HTMLDivElement).classList.add('tabContent');
+        (document.getElementById('notes') as HTMLDivElement).classList.remove('hidden');
 
-        document.getElementById('propertiesTab').classList.remove('selectedTab');
-        document.getElementById('properties').classList.remove('tabContent');
-        document.getElementById('properties').classList.add('hidden');
+        (document.getElementById('propertiesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('properties') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('properties') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('atributesTab').classList.remove('selectedTab');
-        document.getElementById('attributes').classList.remove('tabContent');
-        document.getElementById('attributes').classList.add('hidden');
+        (document.getElementById('atributesTab') as HTMLDivElement).classList.remove('selectedTab');
+        (document.getElementById('attributes') as HTMLDivElement).classList.remove('tabContent');
+        (document.getElementById('attributes') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('attributesButtons').classList.remove('buttonArea');
-        document.getElementById('attributesButtons').classList.add('hidden');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.remove('buttonArea');
+        (document.getElementById('attributesButtons') as HTMLDivElement).classList.add('hidden');
 
-        document.getElementById('propButtons').classList.add('hidden');
-        document.getElementById('propButtons').classList.remove('buttonArea');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.add('hidden');
+        (document.getElementById('propButtons') as HTMLDivElement).classList.remove('buttonArea');
 
-        document.getElementById('notesButtons').classList.remove('hidden');
-        document.getElementById('notesButtons').classList.add('buttonArea');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.remove('hidden');
+        (document.getElementById('notesButtons') as HTMLDivElement).classList.add('buttonArea');
     }
 
     saveAttributes(): void {
@@ -275,34 +277,34 @@ class FileInfo {
 
         // required: creationtool, creationtoolversion, segtype, o-tmf, adminlang, srclang, datatype.
         if (creationtool === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'creationtool' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'creationtool' });
             return;
         }
         if (creationtoolversion === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'creationtoolversion' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'creationtoolversion' });
             return;
         }
         if (segtype === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'segtype' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'segtype' });
             return;
         }
         if (o_tmf === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'o-tmf' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'o-tmf' });
             return;
         }
         if (adminlang === '' || adminlang === 'none') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'adminlang' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'adminlang' });
             return;
         }
         if (srclang === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'srclang' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'srclang' });
             return;
         }
         if (datatype === '') {
-            this.electron.ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'datatype' });
+            ipcRenderer.send('show-message', { parent: 'fileInfo', group: 'fileInfo', key: 'datatype' });
             return;
         }
-        this.electron.ipcRenderer.send('save-file-attributes', {
+        ipcRenderer.send('save-file-attributes', {
             creationid: creationid,
             creationdate: creationdate,
             creationtool: creationtool,
@@ -329,7 +331,7 @@ class FileInfo {
     }
 
     saveProperties(): void {
-        this.electron.ipcRenderer.send('save-file-properties', this.properties);
+        ipcRenderer.send('save-file-properties', this.properties);
     }
 
     deleteNotes(i: number): void {
@@ -338,6 +340,6 @@ class FileInfo {
     }
 
     saveNotes(): void {
-        this.electron.ipcRenderer.send('save-file-notes', this.notes);
+        ipcRenderer.send('save-file-notes', this.notes);
     }
 }

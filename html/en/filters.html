@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Filters();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="filterText">Text to Search</label></td>
@@ -53,7 +53,10 @@
         <button id="clearFilters">Clear Filters</button>
     </div>
 
-    <script src="../../js/filters.js"></script>
+    <script>
+        const { Filters } = require('../../js/filters.js');
+        new Filters();
+    </script>
 </body>
 
 </html>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new AddLanguage();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="language">Language</label></td>
@@ -20,7 +20,10 @@
     <div class="buttonArea">
         <button id="addLanguage">Add Language</button>
     </div>
-    <script src="../../js/addLanguage.js"></script>
+    <script>
+        const { AddLanguage } = require('../../js/addLanguage.js');
+        new AddLanguage();
+    </script>
 </body>
 
 </html>

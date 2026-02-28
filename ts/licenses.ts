@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,51 +10,51 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Licenses {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class Licenses {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        document.getElementById('TMXEditor').addEventListener('click', () => {
+        (document.getElementById('TMXEditor') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('TMXEditor');
         });
-        document.getElementById('bcp47j').addEventListener('click', () => {
+        (document.getElementById('bcp47j') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('BCP47J');
         });
-        document.getElementById('electron').addEventListener('click', () => {
+        (document.getElementById('electron') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('electron');
         });
-        document.getElementById('Java').addEventListener('click', () => {
+        (document.getElementById('Java') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('Java');
         });
-        document.getElementById('sdltm').addEventListener('click', () => {
+        (document.getElementById('sdltm') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('sdltm');
         });
-        document.getElementById('SQLite').addEventListener('click', () => {
+        (document.getElementById('SQLite') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('SQLite');
         });
-        document.getElementById('TMXValidator').addEventListener('click', () => {
+        (document.getElementById('TMXValidator') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('TMXValidator');
         });
-        document.getElementById('typesxml').addEventListener('click', () => {
+        (document.getElementById('typesxml') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('typesxml');
         });
-        document.getElementById('XMLJava').addEventListener('click', () => {
+        (document.getElementById('XMLJava') as HTMLAnchorElement).addEventListener('click', () => {
             this.openLicense('XMLJava');
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-licenses');
+                ipcRenderer.send('close-licenses');
             }
         });
-        this.electron.ipcRenderer.send('licenses-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        ipcRenderer.send('licenses-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     openLicense(type: string): void {
-        this.electron.ipcRenderer.send('open-license', type);
+        ipcRenderer.send('open-license', type);
     }
 }

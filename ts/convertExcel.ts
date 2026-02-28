@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,59 +10,55 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class ConvertExcel {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class ConvertExcel {
 
     previewTables: HTMLTableElement[] = [];
     columns: any[] = [];
-    langs: string[];
+    langs: string[] = [];
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        document.getElementById('browseExcelFiles').addEventListener('click', () => {
-            this.browseExcelFiles();
+        (document.getElementById('browseExcelFiles') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('get-excelfile');
         });
-        this.electron.ipcRenderer.on('set-excelfile', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-excelfile', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setExcelFile(arg);
         });
-        document.getElementById('browseTmxFiles').addEventListener('click', () => {
+        (document.getElementById('browseTmxFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.browseTmxFiles();
         });
-        this.electron.ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
+        ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
             (document.getElementById('tmxFile') as HTMLInputElement).value = arg;
         });
-        document.getElementById('refreshPreview').addEventListener('click', () => {
+        (document.getElementById('refreshPreview') as HTMLButtonElement).addEventListener('click', () => {
             this.refreshPreview();
         });
         (document.getElementById('sheetSelect') as HTMLSelectElement).addEventListener('change', () => {
             this.sheetChanged();
         });
-        this.electron.ipcRenderer.on('set-preview', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-preview', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setPreview(arg);
         });
-        this.electron.ipcRenderer.on('excel-languages', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('excel-languages', (event: Electron.IpcRendererEvent, arg: any) => {
             this.excelLanguages(arg);
         });
-        document.getElementById('convert').addEventListener('click', () => {
+        (document.getElementById('convert') as HTMLButtonElement).addEventListener('click', () => {
             this.convertExcel();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-convertExcel');
+                ipcRenderer.send('close-convertExcel');
             }
         });
-        document.getElementById('setLanguages').addEventListener('click', () => {
+        (document.getElementById('setLanguages') as HTMLButtonElement).addEventListener('click', () => {
             this.getLanguages();
         });
-        this.electron.ipcRenderer.send('convertExcel-height', { width: document.body.clientWidth, height: document.body.clientHeight });
-    }
-
-    browseExcelFiles(): void {
-        this.electron.ipcRenderer.send('get-excelfile');
+        ipcRenderer.send('convertExcel-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     setExcelFile(arg: string): void {
@@ -91,7 +87,7 @@ class ConvertExcel {
                 value = value + '.tmx';
             }
         }
-        this.electron.ipcRenderer.send('get-converted-tmx', { default: value });
+        ipcRenderer.send('get-converted-tmx', { default: value });
     }
 
     refreshPreview(): void {
@@ -102,7 +98,7 @@ class ConvertExcel {
         let arg = {
             excelFile: excelFile.value,
         }
-        this.electron.ipcRenderer.send('get-excel-preview', arg);
+        ipcRenderer.send('get-excel-preview', arg);
     }
 
     setPreview(data: any[]): void {
@@ -173,12 +169,12 @@ class ConvertExcel {
     getLanguages(): void {
         let excelFile: HTMLInputElement = document.getElementById('excelFile') as HTMLInputElement;
         if (excelFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectExcel', parent: 'convertExcel' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectExcel', parent: 'convertExcel' });
             return;
         }
         let sheetSelect: HTMLSelectElement = document.getElementById('sheetSelect') as HTMLSelectElement;
         let selected: number = sheetSelect.selectedIndex;
-        this.electron.ipcRenderer.send('get-excel-languages', { columns: this.columns[selected], languages: this.langs });
+        ipcRenderer.send('get-excel-languages', { columns: this.columns[selected], languages: this.langs });
     }
 
     excelLanguages(arg: string[]): void {
@@ -195,16 +191,16 @@ class ConvertExcel {
     convertExcel(): void {
         let excelFile: HTMLInputElement = document.getElementById('excelFile') as HTMLInputElement;
         if (excelFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectExcel', parent: 'convertExcel' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectExcel', parent: 'convertExcel' });
             return;
         }
         let tmxFile: HTMLInputElement = document.getElementById('tmxFile') as HTMLInputElement;
         if (tmxFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectTmx', parent: 'convertExcel' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'selectTmx', parent: 'convertExcel' });
             return;
         }
         if (this.langs.length === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'setLanguages', parent: 'convertExcel' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertExcel', key: 'setLanguages', parent: 'convertExcel' });
             return;
         }
         let sheetSelect: HTMLSelectElement = document.getElementById('sheetSelect') as HTMLSelectElement;
@@ -216,6 +212,6 @@ class ConvertExcel {
             langs: this.langs,
             openTMX: (document.getElementById('openTMX') as HTMLInputElement).checked
         }
-        this.electron.ipcRenderer.send('convert-excel-tmx', arg);
+        ipcRenderer.send('convert-excel-tmx', arg);
     }
 }

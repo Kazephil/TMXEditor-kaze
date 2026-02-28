@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Supprimer les traductions identiques à la source</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new RemoveSameAsSource();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="sourceLanguage">Langue source</label></td>
@@ -21,7 +21,11 @@
     <div class="buttonArea">
         <button id="removeSameAsSource">Supprimer les traductions identiques à la source</button>
     </div>
-    <script src="../../js/removeSameAsSource.js"></script>
+    
+    <script>
+        const { RemoveSameAsSource } = require('../../js/removeSameAsSource.js');
+        new RemoveSameAsSource();
+    </script>
 </body>
 
 </html>

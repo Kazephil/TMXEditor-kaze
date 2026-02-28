@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,25 +10,26 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class RemoveUntranslated {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require("electron");
+export class RemoveUntranslated {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-source-language', (event: Electron.IpcRendererEvent, arg: any) => {
             if (arg.srcLang !== '*all*') {
                 (document.getElementById('sourceLanguage') as HTMLSelectElement).value = arg.srcLang;
             }
         });
-        document.getElementById('removeUntranslated').addEventListener('click', () => {
+        (document.getElementById('removeUntranslated') as HTMLButtonElement).addEventListener('click', () => {
             this.removeUntranslated();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -36,11 +37,11 @@ class RemoveUntranslated {
                 this.removeUntranslated();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-removeUntranslated');
+                ipcRenderer.send('close-removeUntranslated');
             }
         });
-        document.getElementById('sourceLanguage').focus();
-        this.electron.ipcRenderer.send('removeUntranslated-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('sourceLanguage') as HTMLSelectElement).focus();
+        ipcRenderer.send('removeUntranslated-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     filterLanguages(langs: Language[]): void {
@@ -50,11 +51,11 @@ class RemoveUntranslated {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         sourceLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('get-source-language');
+        ipcRenderer.send('get-source-language');
     }
 
     removeUntranslated(): void {
         let srcLang: string = (document.getElementById('sourceLanguage') as HTMLSelectElement).value;
-        this.electron.ipcRenderer.send('remove-untranslated', { srcLang: srcLang });
+        ipcRenderer.send('remove-untranslated', { srcLang: srcLang });
     }
 }

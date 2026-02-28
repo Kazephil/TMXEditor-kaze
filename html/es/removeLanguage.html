@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Eliminar Idioma</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new RemoveLanguage();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="language">Idioma</label></td>
@@ -20,7 +20,11 @@
     <div class="buttonArea">
         <button id="removeLanguage">Eliminar Idioma</button>
     </div>
-    <script src="../../js/removeLanguage.js"></script>
+    
+    <script>
+        const { RemoveLanguage } = require('../../js/removeLanguage.js');
+        new RemoveLanguage();
+    </script>
 </body>
 
 </html>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new SearchReplace();">
+<body class="dialog_body">
 
     <table class="table_width">
         <tr>
@@ -35,7 +35,11 @@
     <div class="buttonArea">
         <button id="replace">Replace Text</button>
     </div>
-    <script src="../../js/searchReplace.js"></script>
+    
+    <script>
+        const { SearchReplace } = require('../../js/searchReplace.js');
+        new SearchReplace();
+    </script>
 </body>
 
 </html>

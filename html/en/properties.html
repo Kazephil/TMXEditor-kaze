@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Properties();">
+<body class="dialog_body">
 
     <div class="paddedPanel" style="height: 200px;">
         <table id="propsTable" class="stripes fill_width">
@@ -19,7 +19,10 @@
         <button id="save">Save Properties</button>
     </div>
 
-    <script src="../../js/properties.js"></script>
+    <script>
+        const { Properties } = require('../../js/properties.js');
+        new Properties();
+    </script>
 </body>
 
 </html>

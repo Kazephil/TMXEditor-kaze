@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Ajouter une propriété</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new AddProperty();">
+<body class="dialog_body">
 
     <table id="propsTable" class="fill_width">
         <tr>
@@ -25,7 +25,10 @@
         <button id="saveProperty">Ajouter la propriété</button>
     </div>
 
-    <script src="../../js/addProperty.js"></script>
+    <script>
+        const { AddProperty } = require('../../js/addProperty.js');
+        new AddProperty();
+    </script>
 </body>
 
 </html>

@@ -91,7 +91,7 @@
         "ofSpan": "of ",
         "pageTooltip": "Enter page number and press ENTER",
         "UnitsPage": "Units Page",
-        "UnitsLabel":"Units: ",
+        "UnitsLabel": "Units: ",
         "UnitsTooltip": "Enter number of units/page and press ENTER",
         "anyLanguage": "Any Language",
         "selectLanguage": "Select Language",
@@ -174,7 +174,10 @@
         "AppleQuit": "Quit TMXEditor",
         "WindowsQuit": "Exit",
         "LinuxQuit": "Quit",
-        "SettingsMenu": "&Settings"
+        "SettingsMenu": "&Settings",
+        "EditAttributes": "Edit Attributes",
+        "EditProperties": "Edit Properties",
+        "EditNotes": "Edit Notes"
     },
     "addNote": {
         "enterNote": "Enter note"
@@ -255,9 +258,13 @@
         "creationtool": "Creation Tool is required",
         "creationtoolversion": "Creation Tool Version is required",
         "segtype": "Segment Type is required",
-        "o-tmf" : "Translation Memory Format is required",
+        "o-tmf": "Translation Memory Format is required",
         "adminlang": "Administrative Language is required",
         "srclang": "Source Language is required",
         "datatype": "Data Type is required"
+    },
+    "tbx2tmx": {
+        "noRootElement": "Error parsing TBX file: No root element found",
+        "invalidXML": "Error parsing TBX file: Invalid XML"
     }
 }

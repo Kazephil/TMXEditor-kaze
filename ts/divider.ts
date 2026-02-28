@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,13 +10,13 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class VerticalSplit {
+export class VerticalSplit {
 
     left: HTMLDivElement;
     divider: HTMLDivElement;
     right: HTMLDivElement;
     weights: number[];
-    currentSum: number;
+    currentSum: number = 0;
 
     constructor(parent: HTMLDivElement) {
         parent.style.display = 'flex';
@@ -110,7 +110,7 @@ class VerticalSplit {
     }
 }
 
-class ThreeHorizontalPanels {
+export class ThreeHorizontalPanels {
 
     top: HTMLDivElement;
     topDivider: HTMLDivElement;
@@ -118,9 +118,9 @@ class ThreeHorizontalPanels {
     bottomDivider: HTMLDivElement;
     bottom: HTMLDivElement;
 
-    topHeight: number;
-    centerHeight: number;
-    bottomHeight: number;
+    topHeight: number = 0;
+    centerHeight: number = 0;
+    bottomHeight: number = 0;
 
     weights: number[];
 
@@ -258,7 +258,6 @@ class ThreeHorizontalPanels {
         this.center.style.height = this.centerHeight + 'px';
         this.bottom.style.height = this.bottomHeight + 'px';
         this.weights = [this.topHeight, this.centerHeight, this.bottomHeight];
-
     }
 
     bottomDragEnd(event: DragEvent): void {

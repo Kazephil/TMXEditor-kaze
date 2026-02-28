@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Attributes();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr id="topRow">
@@ -91,7 +91,10 @@
         <button id="saveAttributes">Save Attributes</button>
     </div>
 
-    <script src="../../js/attributes.js"></script>
+    <script>
+        const { Attributes } = require('../../js/attributes.js');
+        new Attributes();
+    </script>
 </body>
 
 </html>

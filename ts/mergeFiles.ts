@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,31 +10,31 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class MergeFiles {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class MergeFiles {
 
     files: string[] = [];
     removeText: string = '';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.on('merged-tmx-file', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('merged-tmx-file', (event: Electron.IpcRendererEvent, arg: any) => {
             (document.getElementById('file') as HTMLInputElement).value = arg;
         });
-        this.electron.ipcRenderer.on('tmx-files', (event: Electron.IpcRendererEvent, arg: string[]) => {
+        ipcRenderer.on('tmx-files', (event: Electron.IpcRendererEvent, arg: string[]) => {
             this.tmxFiles(arg);
         });
-        document.getElementById('browseMergedFile').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('select-merged-tmx');
+        (document.getElementById('browseMergedFile') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('select-merged-tmx');
         });
-        document.getElementById('addFiles').addEventListener('click', () => {
-            this.electron.ipcRenderer.send('add-tmx-files');
+        (document.getElementById('addFiles') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('add-tmx-files');
         });
-        document.getElementById('mergeFiles').addEventListener('click', () => {
+        (document.getElementById('mergeFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.mergeFiles();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -42,32 +42,32 @@ class MergeFiles {
                 this.mergeFiles();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-mergeFiles');
+                ipcRenderer.send('close-mergeFiles');
             }
         });
-        this.electron.ipcRenderer.send('get-remove-file-text');
-        this.electron.ipcRenderer.on('set-remove-file-text', (event: Electron.IpcRendererEvent, text: string) => {
+        ipcRenderer.send('get-remove-file-text');
+        ipcRenderer.on('set-remove-file-text', (event: Electron.IpcRendererEvent, text: string) => {
             this.removeText = text;
         });
-        document.getElementById('file').focus();
-        this.electron.ipcRenderer.send('mergeFiles-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('file') as HTMLInputElement).focus();
+        ipcRenderer.send('mergeFiles-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     mergeFiles(): void {
         let file: string = (document.getElementById('file') as HTMLInputElement).value;
         if (file === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'selectMerged', parent: 'mergeFiles' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'selectMerged', parent: 'mergeFiles' });
             return;
         }
         if (this.files.length === 0) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'addTmxFiles', parent: 'mergeFiles' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'addTmxFiles', parent: 'mergeFiles' });
             return;
         }
         if (this.files.length < 2) {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'addMoreTmx', parent: 'mergeFiles' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'mergeFiles', key: 'addMoreTmx', parent: 'mergeFiles' });
             return;
         }
-        this.electron.ipcRenderer.send('merge-tmx-files', { merged: file, files: this.files });
+        ipcRenderer.send('merge-tmx-files', { merged: file, files: this.files });
     }
 
     tmxFiles(args: string[]): void {

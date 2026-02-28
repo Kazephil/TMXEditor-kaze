@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,22 +10,22 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class SplitFile {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class SplitFile {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.on('tmx-file', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('tmx-file', (event: Electron.IpcRendererEvent, arg: any) => {
             (document.getElementById('file') as HTMLInputElement).value = arg;
         });
-        document.getElementById('browseFiles').addEventListener('click', () => {
+        (document.getElementById('browseFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.browseFiles();
         });
-        document.getElementById('splitFile').addEventListener('click', () => {
+        (document.getElementById('splitFile') as HTMLButtonElement).addEventListener('click', () => {
             this.splitFile();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -33,24 +33,24 @@ class SplitFile {
                 this.splitFile();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-splitFile');
+                ipcRenderer.send('close-splitFile');
             }
         });
-        document.getElementById('file').focus();
-        this.electron.ipcRenderer.send('splitFile-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('file') as HTMLInputElement).focus();
+        ipcRenderer.send('splitFile-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     splitFile(): void {
         let file: string = (document.getElementById('file') as HTMLInputElement).value;
         if (file === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'splitFile', key: 'selectTmx', parent: 'splitFile' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'splitFile', key: 'selectTmx', parent: 'splitFile' });
             return;
         }
         let parts = Number.parseInt((document.getElementById('parts') as HTMLInputElement).value);
-        this.electron.ipcRenderer.send('split-tmx', { file: file, parts: parts });
+        ipcRenderer.send('split-tmx', { file: file, parts: parts });
     }
 
     browseFiles(): void {
-        this.electron.ipcRenderer.send('select-tmx');
+        ipcRenderer.send('select-tmx');
     }
 }

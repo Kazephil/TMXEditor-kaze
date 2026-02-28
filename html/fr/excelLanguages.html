@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Langues du fichier Excel</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new ExcelLanguages();">
+<body class="dialog_body">
 
     <div class="bordered fill_width"
         style="width: 480px; height: 200px; padding: 4px; margin-top:10px; margin-left:4px;">
@@ -22,7 +22,10 @@
         <button id="setExcelLanguages">Enregistrer</button>
     </div>
 
-    <script src="../../js/excelLanguages.js"></script>
+    <script>
+        const { ExcelLanguages } = require('../../js/excelLanguages.js');
+        new ExcelLanguages();
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Informaci&oacute;n del Sistema</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new SystemInformation();">
+<body class="dialog_body">
     <table style="height: 14rem; ">
         <tr>
             <td>TMXEditor</td>
@@ -30,7 +30,11 @@
             <td id="electron"></td>
         </tr>
     </table>
-    <script src="../../js/systemInfo.js"></script>
+    
+    <script>
+        const { SystemInformation } = require('../../js/systemInfo.js');
+        new SystemInformation();
+    </script>
 </body>
 
 </html>

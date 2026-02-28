@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>A&ntilde;adir Nota</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new AddNote();">
+<body class="dialog_body">
 
     <table class="fill_width">
         <tr>
@@ -24,7 +24,10 @@
         <button id="saveNote">A&ntilde;adir Nota</button>
     </div>
 
-    <script src="../../js/addNote.js"></script>
+    <script>
+        const { AddNote } = require('../../js/addNote.js');
+        new AddNote();
+    </script>
 </body>
 
 </html>

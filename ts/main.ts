@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,11 +10,13 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Main {
+import { ipcRenderer } from "electron";
+import { ThreeHorizontalPanels, VerticalSplit } from "./divider.js";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class Main {
 
-    languages: Language[];
+    languages: Language[] = [];
     isLoaded: boolean = false;
 
     topBar: HTMLDivElement;
@@ -24,19 +26,19 @@ class Main {
     currentPage: number = 0;
     maxPage: number = 0;
     unitsPage: number = 500;
-    unitsCount: number;
+    unitsCount: number = 0;
 
-    attributes: Array<string[]>;
-    attributesType: string;
-    properties: Array<string[]>;
-    notes: string[];
+    attributes: Array<string[]> = [];
+    attributesType: string | undefined;
+    properties: Array<string[]> = [];
+    notes: string[] = [];
 
-    currentId: string;
-    currentLang: string;
-    currentCell: HTMLTableCellElement;
-    currentContent: string;
+    currentId: string | undefined;
+    currentLang: string | undefined;
+    currentCell: HTMLTableCellElement | undefined;
+    currentContent: string | undefined;
     selectedUnits: string[] = [];
-    lastClickedRow: HTMLTableRowElement
+    lastClickedRow: HTMLTableRowElement | undefined;
 
     static readonly EDIT: string = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
         '<path d="M2.25 15.75H5.0625L13.3575 7.45502L10.545 4.64252L2.25 12.9375V15.75ZM3.75 13.56L10.545 6.76502L11.235 7.45502L4.44 14.25H3.75V13.56Z" />' +
@@ -45,8 +47,14 @@ class Main {
 
     constructor() {
 
+        this.topBar = document.getElementById('topBar') as HTMLDivElement;
         this.createTopToolbar();
+
+        this.mainPanel = document.getElementById('mainPanel') as HTMLDivElement;
+        this.mainPanel.classList.add('lighter');
         this.createCenterPanel();
+
+        this.bottomBar = document.getElementById('bottomBar') as HTMLDivElement;
         this.createBottomToolbar();
 
         setTimeout(() => {
@@ -55,88 +63,97 @@ class Main {
 
         window.addEventListener('resize', () => { this.resize(); });
 
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('request-theme', () => {
-            this.electron.ipcRenderer.send('get-theme');
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('request-theme', () => {
+            ipcRenderer.send('get-theme');
         });
-        this.electron.ipcRenderer.send('get-tooltips');
-        this.electron.ipcRenderer.on('set-tooltips', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.send('get-tooltips');
+        ipcRenderer.on('set-tooltips', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setTooltips(arg);
         });
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.on('save-edit', () => {
+        ipcRenderer.on('save-edit', () => {
             this.saveEdit();
         });
-        this.electron.ipcRenderer.on('data-saved', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('data-saved', (event: Electron.IpcRendererEvent, arg: any) => {
             this.dataSaved(arg);
         });
-        this.electron.ipcRenderer.on('cancel-edit', () => {
+        ipcRenderer.on('cancel-edit', () => {
             this.cancelEdit();
         });
-        this.electron.ipcRenderer.on('request-delete', () => {
+        ipcRenderer.on('request-delete', () => {
             this.deleteUnits();
         });
-        this.electron.ipcRenderer.on('sort-on', () => {
+        ipcRenderer.on('sort-on', () => {
             (document.getElementById('sortUnits') as HTMLAnchorElement).classList.add('active');
         });
-        this.electron.ipcRenderer.on('sort-off', () => {
+        ipcRenderer.on('sort-off', () => {
             (document.getElementById('sortUnits') as HTMLAnchorElement).classList.remove('active');
         });
-        this.electron.ipcRenderer.on('filters-on', () => {
+        ipcRenderer.on('filters-on', () => {
             (document.getElementById('filterUnits') as HTMLAnchorElement).classList.add('active');
         });
-        this.electron.ipcRenderer.on('filters-off', () => {
+        ipcRenderer.on('filters-off', () => {
             (document.getElementById('filterUnits') as HTMLAnchorElement).classList.remove('active');
         });
-        this.electron.ipcRenderer.on('start-waiting', () => {
+        ipcRenderer.on('start-waiting', () => {
             document.body.classList.add("wait");
         });
-        this.electron.ipcRenderer.on('end-waiting', () => {
+        ipcRenderer.on('end-waiting', () => {
             document.body.classList.remove("wait");
         });
-        this.electron.ipcRenderer.on('set-status', (event: Electron.IpcRendererEvent, value: string) => {
+        ipcRenderer.on('set-status', (event: Electron.IpcRendererEvent, value: string) => {
             this.setStatus(value);
         });
-        this.electron.ipcRenderer.on('status-changed', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('status-changed', (event: Electron.IpcRendererEvent, arg: any) => {
             this.statusChanged(arg);
         });
-        this.electron.ipcRenderer.on('update-languages', (event: Electron.IpcRendererEvent, langs: Language[]) => {
+        ipcRenderer.on('update-languages', (event: Electron.IpcRendererEvent, langs: Language[]) => {
             this.updateLanguages(langs);
         });
-        this.electron.ipcRenderer.on('file-loaded', (event: Electron.IpcRendererEvent, fileInfo: any) => {
+        ipcRenderer.on('file-loaded', (event: Electron.IpcRendererEvent, fileInfo: any) => {
             this.fileLoaded(fileInfo);
         });
-        this.electron.ipcRenderer.on('file-closed', () => {
+        ipcRenderer.on('file-closed', () => {
             this.fileClosed();
         });
-        this.electron.ipcRenderer.on('update-segments', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('update-segments', (event: Electron.IpcRendererEvent, arg: any) => {
             this.updateSegments(arg);
         });
-        this.electron.ipcRenderer.on('update-properties', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('update-properties', (event: Electron.IpcRendererEvent, arg: any) => {
             this.updateProperties(arg);
         });
-        this.electron.ipcRenderer.on('set-first-page', () => {
+        ipcRenderer.on('set-first-page', () => {
             this.setFirstPage();
         });
-        this.electron.ipcRenderer.on('first-page', () => {
+        ipcRenderer.on('first-page', () => {
             this.firstPage();
         });
-        this.electron.ipcRenderer.on('previous-page', () => {
+        ipcRenderer.on('previous-page', () => {
             this.previousPage();
         });
-        this.electron.ipcRenderer.on('next-page', () => {
+        ipcRenderer.on('next-page', () => {
             this.nextPage();
         });
-        this.electron.ipcRenderer.on('last-page', () => {
+        ipcRenderer.on('last-page', () => {
             this.lastPage();
         });
-        this.electron.ipcRenderer.on('unit-inserted', (event: Electron.IpcRendererEvent, id: string) => {
+        ipcRenderer.on('unit-inserted', (event: Electron.IpcRendererEvent, id: string) => {
             this.unitInserted(id);
         });
-        this.electron.ipcRenderer.on('force-save', () => {
+        ipcRenderer.on('force-save', () => {
             this.saveEdit();
+        });
+        ipcRenderer.on('edit-attributes', () => {
+            this.editAttributes();
+        });
+        ipcRenderer.on('edit-properties', () => {
+            this.editProperties();
+        });
+        ipcRenderer.on('edit-notes', () => {
+            this.editNotes();
         });
     }
 
@@ -149,8 +166,6 @@ class Main {
     }
 
     createTopToolbar() {
-        this.topBar = document.getElementById('topBar') as HTMLDivElement;
-
         let openFile: HTMLAnchorElement = document.createElement('a');
         openFile.classList.add('tooltip');
         openFile.classList.add('bottomTooltip');
@@ -378,9 +393,6 @@ class Main {
     }
 
     createCenterPanel(): void {
-        this.mainPanel = document.getElementById('mainPanel') as HTMLDivElement;
-        this.mainPanel.classList.add('lighter');
-
         let split: VerticalSplit = new VerticalSplit(this.mainPanel);
         split.setWeights([80, 20]);
 
@@ -453,36 +465,39 @@ class Main {
     }
 
     setTooltips(tooltips: any): void {
-        document.getElementById('open').innerText = tooltips.open;
-        document.getElementById('new').innerText = tooltips.new;
-        document.getElementById('save').innerText = tooltips.save;
-        document.getElementById('fileProperties').innerText = tooltips.fileProperties;
-        document.getElementById('confirmEdit').innerText = tooltips.confirmEdit;
-        document.getElementById('cancelEdit').innerText = tooltips.cancelEdit;
-        document.getElementById('replaceText').innerText = tooltips.replaceText;
-        document.getElementById('insertUnit').innerText = tooltips.insertUnit;
-        document.getElementById('deleteSelected').innerText = tooltips.deleteSelected;
-        document.getElementById('sortUnitsTip').innerText = tooltips.sortUnits;
-        document.getElementById('filterUnitsTip').innerText = tooltips.filterUnits;
-        document.getElementById('maintenance').innerText = tooltips.maintenance;
-        document.getElementById('convertCSV').innerText = tooltips.convertCSV;
-        document.getElementById('convertExcel').innerText = tooltips.convertExcel;
-        document.getElementById('convertSDLTM').innerText = tooltips.convertSDLTM;
-        document.getElementById('convertTBX').innerText = tooltips.convertTBX;
-        document.getElementById('userGuide').innerText = tooltips.userGuide;
-        document.getElementById('firstPage').innerText = tooltips.firstPage;
-        document.getElementById('previousPage').innerText = tooltips.previousPage;
-        document.getElementById('pageTooltip').innerText = tooltips.pageTooltip;
-        document.getElementById('nextPage').innerText = tooltips.nextPage;
-        document.getElementById('lastPage').innerText = tooltips.lastPage;
-        document.getElementById('unitsPage').innerText = tooltips.unitsPage;
-        document.getElementById('pageSpan').innerText = tooltips.pageSpan;
-        document.getElementById('ofSpan').innerText = tooltips.ofSpan;
-        document.getElementById('unitsLabel').innerText = tooltips.unitsLabel;
-        document.getElementById('unitsTooltip').innerText = tooltips.unitsTooltip;
-        document.getElementById('attributesSpan').innerHTML = tooltips.tuAttributes;
-        document.getElementById('propertiesSpan').innerHTML = tooltips.tuProperties;
-        document.getElementById('notesSpan').innerHTML = tooltips.tuNotes;
+        (document.getElementById('open') as HTMLSpanElement).innerText = tooltips.open;
+        (document.getElementById('new') as HTMLSpanElement).innerText = tooltips.new;
+        (document.getElementById('save') as HTMLSpanElement).innerText = tooltips.save;
+        (document.getElementById('fileProperties') as HTMLSpanElement).innerText = tooltips.fileProperties;
+        (document.getElementById('confirmEdit') as HTMLSpanElement).innerText = tooltips.confirmEdit;
+        (document.getElementById('cancelEdit') as HTMLSpanElement).innerText = tooltips.cancelEdit;
+        (document.getElementById('replaceText') as HTMLSpanElement).innerText = tooltips.replaceText;
+        (document.getElementById('insertUnit') as HTMLSpanElement).innerText = tooltips.insertUnit;
+        (document.getElementById('deleteSelected') as HTMLSpanElement).innerText = tooltips.deleteSelected;
+        (document.getElementById('sortUnitsTip') as HTMLSpanElement).innerText = tooltips.sortUnits;
+        (document.getElementById('filterUnitsTip') as HTMLSpanElement).innerText = tooltips.filterUnits;
+        (document.getElementById('maintenance') as HTMLSpanElement).innerText = tooltips.maintenance;
+        (document.getElementById('convertCSV') as HTMLSpanElement).innerText = tooltips.convertCSV;
+        (document.getElementById('convertExcel') as HTMLSpanElement).innerText = tooltips.convertExcel;
+        (document.getElementById('convertSDLTM') as HTMLSpanElement).innerText = tooltips.convertSDLTM;
+        (document.getElementById('convertTBX') as HTMLSpanElement).innerText = tooltips.convertTBX;
+        (document.getElementById('userGuide') as HTMLSpanElement).innerText = tooltips.userGuide;
+        (document.getElementById('firstPage') as HTMLSpanElement).innerText = tooltips.firstPage;
+        (document.getElementById('previousPage') as HTMLSpanElement).innerText = tooltips.previousPage;
+        (document.getElementById('pageTooltip') as HTMLSpanElement).innerText = tooltips.pageTooltip;
+        (document.getElementById('nextPage') as HTMLSpanElement).innerText = tooltips.nextPage;
+        (document.getElementById('lastPage') as HTMLSpanElement).innerText = tooltips.lastPage;
+        (document.getElementById('unitsPage') as HTMLSpanElement).innerText = tooltips.unitsPage;
+        (document.getElementById('pageSpan') as HTMLSpanElement).innerText = tooltips.pageSpan;
+        (document.getElementById('ofSpan') as HTMLSpanElement).innerText = tooltips.ofSpan;
+        (document.getElementById('unitsLabel') as HTMLSpanElement).innerText = tooltips.unitsLabel;
+        (document.getElementById('unitsTooltip') as HTMLSpanElement).innerText = tooltips.unitsTooltip;
+        (document.getElementById('attributesSpan') as HTMLSpanElement).innerHTML = tooltips.tuAttributes;
+        (document.getElementById('propertiesSpan') as HTMLSpanElement).innerHTML = tooltips.tuProperties;
+        (document.getElementById('notesSpan') as HTMLSpanElement).innerHTML = tooltips.tuNotes;
+        (document.getElementById('editAttributesTooltip') as HTMLSpanElement).innerText = tooltips.editAttributes;
+        (document.getElementById('editPropertiesTooltip') as HTMLSpanElement).innerText = tooltips.editProperties;
+        (document.getElementById('editNotesTooltip') as HTMLSpanElement).innerText = tooltips.editNotes;
     }
 
     buildRightPanels(rightPanel: HTMLDivElement): void {
@@ -515,35 +530,37 @@ class Main {
         panelsContainer.classList.add('topPaddedPanel');
         topPanel.appendChild(panelsContainer);
 
-        let titleTable: HTMLTableElement = document.createElement('table');
-        titleTable.classList.add('titlePanel');
-        panelsContainer.appendChild(titleTable);
+        let titlePanel:  HTMLDivElement = document.createElement('div');
+        titlePanel.classList.add('titlePanel');
+        titlePanel.classList.add('row');
+        titlePanel.classList.add('noWrap');
+        panelsContainer.appendChild(titlePanel);
 
-        let tableRow: HTMLTableRowElement = document.createElement('tr');
-        titleTable.appendChild(tableRow);
+        let attributesSpan: HTMLSpanElement = document.createElement('span');
+        attributesSpan.id = 'attributesSpan';
+        attributesSpan.classList.add('noWrap');
+        attributesSpan.style.marginLeft = '4px';
+        attributesSpan.style.marginTop = '4px';
+        attributesSpan.innerText = 'TU';
+        titlePanel.appendChild(attributesSpan);
 
-        let attributesCell: HTMLTableCellElement = document.createElement('td');
-        attributesCell.id = 'attributesSpan';
-        attributesCell.classList.add('noWrap');
-        attributesCell.innerText = 'TU';
-        tableRow.appendChild(attributesCell);
-
-        let cell: HTMLTableCellElement = document.createElement('td');
-        cell.innerHTML = '&nbsp;';
-        cell.classList.add('fill_width');
-        cell.style.marginLeft = '4px';
-        tableRow.appendChild(cell);
-
-        let editCell: HTMLTableCellElement = document.createElement('td');
-        tableRow.appendChild(editCell);
+        let fillerSpan: HTMLSpanElement = document.createElement('span');
+        fillerSpan.innerHTML = '&nbsp;';
+        fillerSpan.classList.add('fill_width');
+        titlePanel.appendChild(fillerSpan);
 
         let editAttributes: HTMLAnchorElement = document.createElement('a');
         editAttributes.id = 'editAttributes';
-        editAttributes.innerHTML = Main.EDIT;
+        editAttributes.classList.add('tooltip');
+        editAttributes.classList.add('bottomRightTooltip');
+        editAttributes.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M2.25 15.75H5.0625L13.3575 7.45502L10.545 4.64252L2.25 12.9375V15.75ZM3.75 13.56L10.545 6.76502L11.235 7.45502L4.44 14.25H3.75V13.56Z" />' +
+            '<path d="M13.7775 2.46751C13.485 2.17501 13.0125 2.17501 12.72 2.46751L11.3475 3.84001L14.16 6.65251L15.5325 5.28001C15.825 4.98751 15.825 4.51501 15.5325 4.22251L13.7775 2.46751Z" />' +
+            '</svg>' + '<span class="tooltiptext bottomRightTooltip" id="editAttributesTooltip"></span>';
         editAttributes.addEventListener('click', () => {
             this.editAttributes();
         });
-        editCell.appendChild(editAttributes);
+        titlePanel.appendChild(editAttributes);
 
         let attributesPanel: HTMLDivElement = document.createElement('div');
         attributesPanel.id = 'attributesPanel';
@@ -562,7 +579,7 @@ class Main {
         let observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'attributes') {
-                    attributesPanel.style.height = (panelsContainer.clientHeight - titleTable.clientHeight) + 'px';
+                    attributesPanel.style.height = (panelsContainer.clientHeight - titlePanel.clientHeight) + 'px';
                     attributesPanel.style.width = panelsContainer.clientWidth + 'px';
                 }
             }
@@ -577,35 +594,37 @@ class Main {
         panelsContainer.classList.add('centerPaddedPanel');
         centerPanel.appendChild(panelsContainer);
 
-        let titleTable: HTMLTableElement = document.createElement('table');
-        titleTable.classList.add('titlePanel');
-        panelsContainer.appendChild(titleTable);
+        let titlePanel:  HTMLDivElement = document.createElement('div');
+        titlePanel.classList.add('titlePanel');
+        titlePanel.classList.add('row');
+        titlePanel.classList.add('noWrap');
+        panelsContainer.appendChild(titlePanel);
 
-        let tableRow: HTMLTableRowElement = document.createElement('tr');
-        titleTable.appendChild(tableRow);
+        let propertiesSpan: HTMLSpanElement = document.createElement('span');
+        propertiesSpan.id = 'propertiesSpan';
+        propertiesSpan.classList.add('noWrap');
+        propertiesSpan.style.marginLeft = '4px';
+        propertiesSpan.style.marginTop = '4px';
+        propertiesSpan.innerText = 'TU';
+        titlePanel.appendChild(propertiesSpan);
 
-        let propertiesCell: HTMLTableCellElement = document.createElement('td');
-        propertiesCell.id = 'propertiesSpan';
-        propertiesCell.classList.add('noWrap');
-        propertiesCell.innerText = 'TU';
-        tableRow.appendChild(propertiesCell);
-
-        let cell: HTMLTableCellElement = document.createElement('td');
-        cell.innerHTML = '&nbsp;';
-        cell.classList.add('fill_width');
-        cell.style.marginLeft = '4px';
-        tableRow.appendChild(cell);
-
-        let editCell: HTMLTableCellElement = document.createElement('td');
-        tableRow.appendChild(editCell);
+        let fillerSpan: HTMLSpanElement = document.createElement('span');
+        fillerSpan.innerHTML = '&nbsp;';
+        fillerSpan.classList.add('fill_width');
+        titlePanel.appendChild(fillerSpan);
 
         let editProperties: HTMLAnchorElement = document.createElement('a');
         editProperties.id = 'editProperties';
-        editProperties.innerHTML = Main.EDIT;
+        editProperties.classList.add('tooltip');
+        editProperties.classList.add('bottomRightTooltip');
+        editProperties.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M2.25 15.75H5.0625L13.3575 7.45502L10.545 4.64252L2.25 12.9375V15.75ZM3.75 13.56L10.545 6.76502L11.235 7.45502L4.44 14.25H3.75V13.56Z" />' +
+            '<path d="M13.7775 2.46751C13.485 2.17501 13.0125 2.17501 12.72 2.46751L11.3475 3.84001L14.16 6.65251L15.5325 5.28001C15.825 4.98751 15.825 4.51501 15.5325 4.22251L13.7775 2.46751Z" />' +
+            '</svg>' + '<span class="tooltiptext bottomRightTooltip" id="editPropertiesTooltip"></span>';
         editProperties.addEventListener('click', () => {
             this.editProperties();
         });
-        editCell.appendChild(editProperties);
+        titlePanel.appendChild(editProperties);
 
         let propertiesPanel: HTMLDivElement = document.createElement('div');
         propertiesPanel.id = 'propertiesPanel';
@@ -623,7 +642,7 @@ class Main {
         let observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'attributes') {
-                    propertiesPanel.style.height = (panelsContainer.clientHeight - titleTable.clientHeight) + 'px';
+                    propertiesPanel.style.height = (panelsContainer.clientHeight - titlePanel.clientHeight) + 'px';
                     propertiesPanel.style.width = panelsContainer.clientWidth + 'px';
                 }
             }
@@ -638,35 +657,37 @@ class Main {
         panelsContainer.classList.add('bottomPaddedPanel');
         bottomPanel.appendChild(panelsContainer);
 
-        let titleTable: HTMLTableElement = document.createElement('table');
-        titleTable.classList.add('titlePanel');
-        panelsContainer.appendChild(titleTable);
+        let titlePanel:  HTMLDivElement = document.createElement('div');
+        titlePanel.classList.add('titlePanel');
+        titlePanel.classList.add('row');
+        titlePanel.classList.add('noWrap');
+        panelsContainer.appendChild(titlePanel);
 
-        let tableRow: HTMLTableRowElement = document.createElement('tr');
-        titleTable.appendChild(tableRow);
+        let notesSpan: HTMLSpanElement = document.createElement('span');
+        notesSpan.id = 'notesSpan';
+        notesSpan.classList.add('noWrap');
+        notesSpan.style.marginLeft = '4px';
+        notesSpan.style.marginTop = '4px';
+        notesSpan.innerText = 'TU';
+        titlePanel.appendChild(notesSpan);
 
-        let notesCell: HTMLTableCellElement = document.createElement('td');
-        notesCell.id = 'notesSpan';
-        notesCell.classList.add('noWrap');
-        notesCell.innerText = 'TU';
-        tableRow.appendChild(notesCell);
-
-        let cell: HTMLTableCellElement = document.createElement('td');
-        cell.innerHTML = '&nbsp;';
-        cell.classList.add('fill_width');
-        cell.style.marginLeft = '4px';
-        tableRow.appendChild(cell);
-
-        let editCell: HTMLTableCellElement = document.createElement('td');
-        tableRow.appendChild(editCell);
+        let fillerSpan: HTMLSpanElement = document.createElement('span');
+        fillerSpan.innerHTML = '&nbsp;';
+        fillerSpan.classList.add('fill_width');
+        titlePanel.appendChild(fillerSpan);
 
         let editNotes: HTMLAnchorElement = document.createElement('a');
         editNotes.id = 'editNotes';
-        editNotes.innerHTML = Main.EDIT;
+        editNotes.classList.add('tooltip');
+        editNotes.classList.add('bottomRightTooltip');
+        editNotes.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M2.25 15.75H5.0625L13.3575 7.45502L10.545 4.64252L2.25 12.9375V15.75ZM3.75 13.56L10.545 6.76502L11.235 7.45502L4.44 14.25H3.75V13.56Z" />' +
+            '<path d="M13.7775 2.46751C13.485 2.17501 13.0125 2.17501 12.72 2.46751L11.3475 3.84001L14.16 6.65251L15.5325 5.28001C15.825 4.98751 15.825 4.51501 15.5325 4.22251L13.7775 2.46751Z" />' +
+            '</svg>' + '<span class="tooltiptext bottomRightTooltip" id="editNotesTooltip"></span>';
         editNotes.addEventListener('click', () => {
             this.editNotes();
         });
-        editCell.appendChild(editNotes);
+        titlePanel.appendChild(editNotes);
 
         let notesPanel: HTMLDivElement = document.createElement('div');
         notesPanel.id = 'notesPanel';
@@ -684,7 +705,7 @@ class Main {
         let observer = new MutationObserver((mutationsList) => {
             for (let mutation of mutationsList) {
                 if (mutation.type === 'attributes') {
-                    notesPanel.style.height = (panelsContainer.clientHeight - titleTable.clientHeight) + 'px';
+                    notesPanel.style.height = (panelsContainer.clientHeight - titlePanel.clientHeight) + 'px';
                     notesPanel.style.width = panelsContainer.clientWidth + 'px';
                 }
             }
@@ -693,7 +714,6 @@ class Main {
     }
 
     createBottomToolbar(): void {
-        this.bottomBar = document.getElementById('bottomBar') as HTMLDivElement;
 
         let first: HTMLAnchorElement = document.createElement('a');
         first.id = 'first';
@@ -830,19 +850,19 @@ class Main {
     }
 
     openFile(): void {
-        this.electron.ipcRenderer.send('open-file');
+        ipcRenderer.send('open-file');
     }
 
     newFile(): void {
-        this.electron.ipcRenderer.send('new-file');
+        ipcRenderer.send('new-file');
     }
 
     saveFile(): void {
-        this.electron.ipcRenderer.send('save-file');
+        ipcRenderer.send('save-file');
     }
 
     showFileInfo(): void {
-        this.electron.ipcRenderer.send('show-file-info');
+        ipcRenderer.send('show-file-info');
     }
 
     saveEdit(): void {
@@ -854,30 +874,32 @@ class Main {
                 this.cancelEdit();
                 return;
             }
-            this.electron.ipcRenderer.send('save-data', { id: this.currentId, lang: this.currentLang, data: this.removeSpan() });
+            ipcRenderer.send('save-data', { id: this.currentId, lang: this.currentLang, data: this.removeSpan() });
             this.currentContent = this.currentCell.innerHTML;
             this.currentCell.contentEditable = 'false';
             this.currentCell.classList.remove('editing');
-            this.electron.ipcRenderer.send('saved-edit', { id: this.currentId, lang: this.currentLang });
-            this.currentCell = null;
+            ipcRenderer.send('saved-edit', { id: this.currentId, lang: this.currentLang });
+            this.currentCell = undefined;
         }
     }
 
     removeSpan(): string {
         let result: string = '';
-        let nodes: NodeListOf<ChildNode> = this.currentCell.childNodes;
-        let length: number = nodes.length;
-        for (let i = 0; i < length; i++) {
-            let node: Node = nodes[i];
-            if (node.nodeType === Node.TEXT_NODE) {
-                result = result + node.nodeValue;
-            }
-            if (node.nodeType === Node.ELEMENT_NODE) {
-                let element = node as HTMLElement;
-                if (element.tagName === 'SPAN') {
-                    result = result + element.innerText;
-                } else {
-                    result = result + element.outerHTML;
+        if (this.currentCell) {
+            let nodes: NodeListOf<ChildNode> = this.currentCell.childNodes;
+            let length: number = nodes.length;
+            for (let i = 0; i < length; i++) {
+                let node: Node = nodes[i];
+                if (node.nodeType === Node.TEXT_NODE) {
+                    result = result + node.nodeValue;
+                }
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    let element = node as HTMLElement;
+                    if (element.tagName === 'SPAN') {
+                        result = result + element.innerText;
+                    } else {
+                        result = result + element.outerHTML;
+                    }
                 }
             }
         }
@@ -885,14 +907,16 @@ class Main {
     }
 
     dataSaved(arg: any): void {
-        let tr: HTMLElement = document.getElementById(arg.id);
-        let children: HTMLCollection = tr.children;
-        let length: number = children.length;
-        for (let i = 0; i < length; i++) {
-            let td: HTMLElement = children.item(i) as HTMLElement;
-            if (td.lang === arg.lang) {
-                td.innerHTML = arg.data;
-                break;
+        let tr: HTMLElement | null = document.getElementById(arg.id);
+        if (tr) {
+            let children: HTMLCollection = tr.children;
+            let length: number = children.length;
+            for (let i = 0; i < length; i++) {
+                let td: HTMLElement = children.item(i) as HTMLElement;
+                if (td.lang === arg.lang) {
+                    td.innerHTML = arg.data;
+                    break;
+                }
             }
         }
     }
@@ -901,25 +925,25 @@ class Main {
         if (!this.isLoaded) {
             return;
         }
-        if (this.currentCell) {
+        if (this.currentCell && this.currentContent) {
             this.currentCell.innerHTML = this.currentContent;
             this.currentCell.contentEditable = 'false';
             this.currentCell.classList.remove('editing');
-            this.electron.ipcRenderer.send('cancel-editing');
+            ipcRenderer.send('cancel-editing');
         }
     }
 
     replaceText(): void {
-        this.electron.ipcRenderer.send('replace-text');
+        ipcRenderer.send('replace-text');
     }
 
     insertUnit(): void {
-        this.electron.ipcRenderer.send('insert-unit');
+        ipcRenderer.send('insert-unit');
     }
 
     deleteUnits(): void {
         this.getSelected();
-        this.electron.ipcRenderer.send('delete-units', this.selectedUnits);
+        ipcRenderer.send('delete-units', this.selectedUnits);
     }
 
     getSelected(): void {
@@ -929,41 +953,41 @@ class Main {
         for (let i = 0; i < length; i++) {
             let check = collection[i] as HTMLInputElement;
             if (check.checked) {
-                this.selectedUnits.push(check.parentElement.parentElement.id);
+                this.selectedUnits.push(check.parentElement?.parentElement?.id || '');
             }
         }
     }
 
     sortUnits(): void {
-        this.electron.ipcRenderer.send('sort-units');
+        ipcRenderer.send('sort-units');
     }
 
     filterUnits(): void {
-        this.electron.ipcRenderer.send('filter-units');
+        ipcRenderer.send('filter-units');
     }
 
     maintenanceDashboard(): void {
-        this.electron.ipcRenderer.send('maintenance-dashboard');
+        ipcRenderer.send('maintenance-dashboard');
     }
 
     convertCSV(): void {
-        this.electron.ipcRenderer.send('convert-csv');
+        ipcRenderer.send('convert-csv');
     }
 
     convertExcel(): void {
-        this.electron.ipcRenderer.send('convert-excel');
+        ipcRenderer.send('convert-excel');
     }
 
     convertSDLTM(): void {
-        this.electron.ipcRenderer.send('convert-sdltm');
+        ipcRenderer.send('convert-sdltm');
     }
 
     convertTBX(): void {
-        this.electron.ipcRenderer.send('convert-tbx');
+        ipcRenderer.send('convert-tbx');
     }
 
     openHelp(): void {
-        this.electron.ipcRenderer.send('show-help');
+        ipcRenderer.send('show-help');
     }
 
     editAttributes(): void {
@@ -973,7 +997,7 @@ class Main {
         if (!this.currentId || this.currentId === null || this.currentId === '') {
             return;
         }
-        this.electron.ipcRenderer.send('edit-attributes', { id: this.currentId, atts: this.attributes, type: this.attributesType });
+        ipcRenderer.send('edit-attributes', { id: this.currentId, atts: this.attributes, type: this.attributesType });
     }
 
     editProperties(): void {
@@ -983,7 +1007,7 @@ class Main {
         if (!this.currentId || this.currentId === null || this.currentId === '') {
             return;
         }
-        this.electron.ipcRenderer.send('edit-properties', { id: this.currentId, props: this.properties, type: this.attributesType });
+        ipcRenderer.send('edit-properties', { id: this.currentId, props: this.properties, type: this.attributesType });
     }
 
     editNotes(): void {
@@ -993,7 +1017,7 @@ class Main {
         if (!this.currentId || this.currentId === null || this.currentId === '') {
             return;
         }
-        this.electron.ipcRenderer.send('edit-notes', { id: this.currentId, notes: this.notes, type: this.attributesType });
+        ipcRenderer.send('edit-notes', { id: this.currentId, notes: this.notes, type: this.attributesType });
     }
 
     setStatus(value: string): void {
@@ -1009,9 +1033,9 @@ class Main {
     statusChanged(arg: any): void {
         if (arg.status === 'Success') {
             if (arg.count != undefined) {
-                document.getElementById('units').innerText = arg.count;
+                (document.getElementById('units') as HTMLSpanElement).innerText = arg.count;
                 this.maxPage = Math.ceil(arg.count / this.unitsPage);
-                document.getElementById('pages').innerText = '' + this.maxPage;
+                (document.getElementById('pages') as HTMLSpanElement).innerText = '' + this.maxPage;
             }
         }
     }
@@ -1023,8 +1047,8 @@ class Main {
         for (let index = 0; index < length; ++index) {
             row = row + '<th>' + this.languages[index].code + ' - ' + langs[index].name + '</th>';
         }
-        document.getElementById('tableHeader').innerHTML = row + '</tr>';
-        document.getElementById('selectAll').addEventListener('click', () => {
+        (document.getElementById('tableHeader') as HTMLTableSectionElement).innerHTML = row + '</tr>';
+        (document.getElementById('selectAll') as HTMLInputElement).addEventListener('click', () => {
             this.toggleSelectAll();
         });
     }
@@ -1032,28 +1056,28 @@ class Main {
     fileLoaded(arg: any): void {
         if (arg.count != undefined) {
             this.unitsCount = arg.count;
-            document.getElementById('units').innerText = '' + this.unitsCount;
+            (document.getElementById('units') as HTMLSpanElement).innerText = '' + this.unitsCount;
             this.maxPage = Math.ceil(this.unitsCount / this.unitsPage);
-            document.getElementById('pages').innerText = '' + this.maxPage;
+            (document.getElementById('pages') as HTMLSpanElement).innerText = '' + this.maxPage;
         }
-        document.getElementById('filterUnits').classList.remove('active');
-        document.getElementById('sortUnits').classList.remove('active');
+        document.getElementById('filterUnits')?.classList.remove('active');
+        document.getElementById('sortUnits')?.classList.remove('active');
         this.isLoaded = true;
         this.firstPage();
     }
 
     fileClosed(): void {
-        document.getElementById("tableBody").innerHTML = '';
-        document.getElementById("tableHeader").innerHTML = '<tr><th class="fixed"><input type="checkbox" id="selectAll"></th><th class="fixed">#</th><th>&nbsp;</th><th>&nbsp;</th></tr>';
+        (document.getElementById("tableBody") as HTMLTableSectionElement).innerHTML = '';
+        (document.getElementById("tableHeader") as HTMLTableSectionElement).innerHTML = '<tr><th class="fixed"><input type="checkbox" id="selectAll"></th><th class="fixed">#</th><th>&nbsp;</th><th>&nbsp;</th></tr>';
         (document.getElementById('page') as HTMLInputElement).value = '0';
-        document.getElementById('pages').innerHTML = '0';
-        document.getElementById('units').innerHTML = '';
-        document.getElementById('attributesTable').innerHTML = '';
-        document.getElementById('propertiesTable').innerHTML = '';
-        document.getElementById('notesTable').innerHTML = '';
-        document.getElementById('filterUnits').classList.remove('active');
-        document.getElementById('sortUnits').classList.remove('active');
-        document.getElementById('selectAll').addEventListener('click', () => {
+        (document.getElementById('pages') as HTMLSpanElement).innerText = '0';
+        (document.getElementById('units') as HTMLSpanElement).innerText = '';
+        (document.getElementById('attributesTable') as HTMLTableSectionElement).innerHTML = '';
+        (document.getElementById('propertiesTable') as HTMLTableSectionElement).innerHTML = '';
+        (document.getElementById('notesTable') as HTMLTableSectionElement).innerHTML = '';
+        document.getElementById('filterUnits')?.classList.remove('active');
+        document.getElementById('sortUnits')?.classList.remove('active');
+        (document.getElementById('selectAll') as HTMLInputElement).addEventListener('click', () => {
             this.toggleSelectAll();
         });
         this.currentPage = 0;
@@ -1091,16 +1115,16 @@ class Main {
         let cells = document.getElementsByClassName('lang');
         length = cells.length;
         for (let i = 0; i < length; i++) {
-            cells[i].addEventListener('click', (ev: MouseEvent) => this.clickListener(ev));
+            (cells[i] as HTMLTableCellElement).addEventListener('click', (ev: MouseEvent) => this.clickListener(ev));
         }
         let fixed = document.getElementsByClassName('fixed');
         length = fixed.length;
         for (let i = 0; i < length; i++) {
-            fixed[i].addEventListener('click', (ev: MouseEvent) => this.fixedListener(ev));
+            (fixed[i] as HTMLTableCellElement).addEventListener('click', (ev: MouseEvent) => this.fixedListener(ev));
         }
-        document.getElementById('attributesTable').innerHTML = '';
-        document.getElementById('propertiesTable').innerHTML = '';
-        document.getElementById('notesTable').innerHTML = '';
+        (document.getElementById('attributesTable') as HTMLTableSectionElement).innerHTML = '';
+        (document.getElementById('propertiesTable') as HTMLTableSectionElement).innerHTML = '';
+        (document.getElementById('notesTable') as HTMLTableSectionElement).innerHTML = '';
         this.currentId = undefined;
         this.setStatus('');
     }
@@ -1113,12 +1137,12 @@ class Main {
             this.saveEdit();
         }
         let element: Element = (event.target as Element);
-        if (element.parentElement.tagName === 'TH') {
+        if (element.parentElement?.tagName === 'TH') {
             // clicked header
             return;
         }
         let x: string = element.tagName;
-        let id: string;
+        let id: string | undefined;
         if ('TD' === x || 'INPUT' === x) {
             let composed = event.composedPath();
             if ('TR' === (composed[0] as Element).tagName) {
@@ -1131,7 +1155,7 @@ class Main {
         }
         if (id) {
             this.currentId = id;
-            this.electron.ipcRenderer.send('get-row-properties', this.currentId);
+            ipcRenderer.send('get-row-properties', this.currentId);
         }
     }
 
@@ -1140,13 +1164,13 @@ class Main {
             return;
         }
         let element: Element = (event.target as Element);
-        if (element.parentElement.tagName === 'TH') {
+        if (element.parentElement?.tagName === 'TH') {
             // clicked header
             return;
         }
         let x: string = element.tagName;
-        let id: string;
-        let lang: string;
+        let id: string | undefined;
+        let lang: string | undefined;
         if ('TD' === x || 'INPUT' === x) {
             let composed = event.composedPath();
             if ('TR' === (composed[0] as Element).tagName) {
@@ -1156,7 +1180,7 @@ class Main {
             } else if ('TR' === (composed[2] as Element).tagName) {
                 id = (composed[2] as Element).id;
             }
-            lang = (event.target as Element).getAttribute('lang');
+            lang = (event.target as Element).getAttribute('lang') || undefined;
         }
         if (this.currentCell && this.currentCell.isContentEditable && (this.currentId !== id || this.currentLang !== lang)) {
             this.saveEdit();
@@ -1178,8 +1202,8 @@ class Main {
                 this.currentCell.contentEditable = 'true';
                 this.currentCell.classList.add('editing');
                 this.currentCell.focus();
-                this.electron.ipcRenderer.send('get-cell-properties', { id: this.currentId, lang: this.currentLang });
-                this.electron.ipcRenderer.send('editing-started', { id: this.currentId, lang: this.currentLang });
+                ipcRenderer.send('get-cell-properties', { id: this.currentId, lang: this.currentLang });
+                ipcRenderer.send('editing-started', { id: this.currentId, lang: this.currentLang });
             }
         }
     }
@@ -1202,8 +1226,8 @@ class Main {
 
     updateProperties(arg: any): void {
         this.attributesType = arg.type;
-        document.getElementById('attributesSpan').innerHTML = arg.attributesType;
-        let table = document.getElementById('attributesTable');
+        (document.getElementById('attributesSpan') as HTMLSpanElement).innerHTML = arg.attributesType;
+        let table: HTMLTableSectionElement = document.getElementById('attributesTable') as HTMLTableSectionElement;
         table.innerHTML = '';
         this.attributes = arg.attributes;
         let length: number = this.attributes.length;
@@ -1223,8 +1247,8 @@ class Main {
             tr.appendChild(right);
         }
 
-        document.getElementById('propertiesSpan').innerHTML = arg.propertiesType;
-        table = document.getElementById('propertiesTable');
+        (document.getElementById('propertiesSpan') as HTMLSpanElement).innerHTML = arg.propertiesType;
+        table = document.getElementById('propertiesTable') as HTMLTableSectionElement;
         table.innerHTML = '';
         this.properties = arg.properties;
         length = this.properties.length
@@ -1244,8 +1268,8 @@ class Main {
             tr.appendChild(right);
         }
 
-        document.getElementById('notesSpan').innerHTML = arg.notesType;
-        table = document.getElementById('notesTable');
+        (document.getElementById('notesSpan') as HTMLSpanElement).innerHTML = arg.notesType;
+        table = document.getElementById('notesTable') as HTMLTableSectionElement;
         table.innerHTML = '';
         this.notes = arg.notes;
         length = this.notes.length;
@@ -1260,7 +1284,7 @@ class Main {
     }
 
     getSegments(): void {
-        this.electron.ipcRenderer.send('get-segments', {
+        ipcRenderer.send('get-segments', {
             start: this.currentPage * this.unitsPage,
             count: this.unitsPage
         });
@@ -1325,7 +1349,7 @@ class Main {
             }
             (document.getElementById('units_page') as HTMLInputElement).value = '' + this.unitsPage;
             this.maxPage = Math.ceil(this.unitsCount / this.unitsPage);
-            document.getElementById('pages').innerText = '' + this.maxPage;
+            (document.getElementById('pages') as HTMLSpanElement).innerText = '' + this.maxPage;
             if (this.currentCell?.isContentEditable) {
                 this.saveEdit();
             }
@@ -1396,6 +1420,6 @@ class Main {
             tr.appendChild(td);
         }
 
-        document.getElementById('tableBody').insertBefore(tr, document.getElementById('tableBody').firstChild);
+        (document.getElementById('tableBody') as HTMLTableSectionElement).insertBefore(tr, (document.getElementById('tableBody') as HTMLTableSectionElement).firstChild);
     }
 }

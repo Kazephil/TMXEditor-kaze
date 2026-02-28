@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new Updates();">
+<body class="dialog_body">
 
     <div class="row">
         <img src="../../icons/tmxeditor.png" width="120" style="padding: 10px;" />
@@ -30,7 +30,11 @@
         <button id="release">View Release History</button>
         <button id="download">Download Update</button>
     </div>
-    <script src="../../js/updates.js"></script>
+    
+    <script>
+        const { Updates } = require('../../js/updates.js');
+        new Updates();
+    </script>
 </body>
 
 </html>

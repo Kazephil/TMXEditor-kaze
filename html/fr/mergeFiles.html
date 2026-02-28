@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Fusionner des fichiers TMX</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new MergeFiles();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="file">Fichier TMX résultat</label></td>
@@ -29,7 +29,11 @@
         <button id="addFiles">Ajouter des fichiers</button>
         <button id="mergeFiles">Fusionner les fichiers</button>
     </div>
-    <script src="../../js/mergeFiles.js"></script>
+    
+    <script>
+        const { MergeFiles } = require('../../js/mergeFiles.js');
+        new MergeFiles();
+    </script>
 </body>
 
 </html>

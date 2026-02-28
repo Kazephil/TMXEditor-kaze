@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,21 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class ChangeLanguages {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class ChangeLanguages {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.languageList(arg)
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,7 +32,7 @@ class ChangeLanguages {
                 this.changeLanguage();
             }
         });
-        document.getElementById('changeLanguage').addEventListener('click', () => {
+        (document.getElementById('changeLanguage') as HTMLButtonElement).addEventListener('click', () => {
             this.changeLanguage();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -39,11 +40,11 @@ class ChangeLanguages {
                 this.changeLanguage();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-changeLanguage');
+                ipcRenderer.send('close-changeLanguage');
             }
         });
-        document.getElementById('currentLanguage').focus();
-        this.electron.ipcRenderer.send('changeLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('currentLanguage') as HTMLSelectElement).focus();
+        ipcRenderer.send('changeLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     languageList(langs: Language[]): void {
@@ -62,16 +63,16 @@ class ChangeLanguages {
             options = options + '<option value="' + lang.code + '">' + lang.name + '</option>'
         }
         currentLanguage.innerHTML = options;
-        this.electron.ipcRenderer.send('all-languages');
+        ipcRenderer.send('all-languages');
     }
 
     changeLanguage(): void {
         let currentLanguage: HTMLSelectElement = document.getElementById('currentLanguage') as HTMLSelectElement;
         let newLanguage: HTMLSelectElement = document.getElementById('newLanguage') as HTMLSelectElement;
         if (newLanguage.value === 'none') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'changeLanguage', key: 'selectLanguageWarning', parent: 'changeLanguage' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'changeLanguage', key: 'selectLanguageWarning', parent: 'changeLanguage' });
             return;
         }
-        this.electron.ipcRenderer.send('change-language', { oldLanguage: currentLanguage.value, newLanguage: newLanguage.value });
+        ipcRenderer.send('change-language', { oldLanguage: currentLanguage.value, newLanguage: newLanguage.value });
     }
 }

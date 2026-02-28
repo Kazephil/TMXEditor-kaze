@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,43 +10,39 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class ConvertSDLTM {
+import { ipcRenderer } from "electron";
 
-    electron = require('electron');
+export class ConvertSDLTM {
 
     langs: string[] = [];
     columns: number = 0;
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.on('set-sdltmfile', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-sdltmfile', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setSdltmFile(arg);
         });
-        this.electron.ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
+        ipcRenderer.on('converted-tmx-file', (event: Electron.IpcRendererEvent, arg: string) => {
             (document.getElementById('tmxFile') as HTMLInputElement).value = arg;
         });
-        document.getElementById('browseSdltmFiles').addEventListener('click', () => {
-            this.browseSdltmFiles();
+        (document.getElementById('browseSdltmFiles') as HTMLButtonElement).addEventListener('click', () => {
+            ipcRenderer.send('get-sdltmfile');
         });
-        document.getElementById('browseTmxFiles').addEventListener('click', () => {
+        (document.getElementById('browseTmxFiles') as HTMLButtonElement).addEventListener('click', () => {
             this.browseTmxFiles();
         });
-        document.getElementById('convert').addEventListener('click', () => {
+        (document.getElementById('convert') as HTMLButtonElement).addEventListener('click', () => {
             this.convertFile();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-convertSdltm');
+                ipcRenderer.send('close-convertSdltm');
             }
         });
-        this.electron.ipcRenderer.send('convertSdltm-height', { width: document.body.clientWidth, height: document.body.clientHeight });
-    }
-
-    browseSdltmFiles(): void {
-        this.electron.ipcRenderer.send('get-sdltmfile');
+        ipcRenderer.send('convertSdltm-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     setSdltmFile(arg: string): void {
@@ -74,18 +70,18 @@ class ConvertSDLTM {
                 value = value + '.tmx';
             }
         }
-        this.electron.ipcRenderer.send('get-converted-tmx', { default: value });
+        ipcRenderer.send('get-converted-tmx', { default: value });
     }
 
     convertFile(): void {
         let sdltmFile = (document.getElementById('sdltmFile') as HTMLInputElement);
         if (sdltmFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertSDLTM', key: 'selectSDLTM', parent: 'convertSDLTM' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertSDLTM', key: 'selectSDLTM', parent: 'convertSDLTM' });
             return;
         }
         let tmxFile = (document.getElementById('tmxFile') as HTMLInputElement);
         if (tmxFile.value === '') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'convertSDLTM', key: 'selectTmx', parent: 'convertSDLTM' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'convertSDLTM', key: 'selectTmx', parent: 'convertSDLTM' });
             return;
         }
 
@@ -94,6 +90,6 @@ class ConvertSDLTM {
             tmxFile: tmxFile.value,
             openTMX: (document.getElementById('openTMX') as HTMLInputElement).checked
         }
-        this.electron.ipcRenderer.send('convert-sdltm-tmx', arg);
+        ipcRenderer.send('convert-sdltm-tmx', arg);
     }
 }

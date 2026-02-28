@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Filtrer les unités de traduction</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new Filters();">
+<body class="dialog_body">
     <table class="fill_width">
         <tr>
             <td class="middle noWrap"><label for="filterText">Recherche</label></td>
@@ -53,7 +53,10 @@
         <button id="clearFilters">Annuler le filtrage</button>
     </div>
 
-    <script src="../../js/filters.js"></script>
+    <script>
+        const { Filters } = require('../../js/filters.js');
+        new Filters();
+    </script>
 </body>
 
 </html>

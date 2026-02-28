@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,27 +10,30 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class Attributes {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
+
+export class Attributes {
 
     electron = require('electron');
 
-    currentId: string;
-    currentType: string;
+    currentId: string = '';
+    currentType: string = '';
     langAttributesText: string = 'Attributes';
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('get-file-languages');
-        this.electron.ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('get-file-languages');
+        ipcRenderer.on('file-languages', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.filterLanguages(arg);
         });
-        this.electron.ipcRenderer.on('set-unit-attributes', (event: Electron.IpcRendererEvent, arg: any) => {
+        ipcRenderer.on('set-unit-attributes', (event: Electron.IpcRendererEvent, arg: any) => {
             this.setUnitAttributes(arg);
         });
-        document.getElementById('saveAttributes').addEventListener('click', () => {
+        (document.getElementById('saveAttributes') as HTMLButtonElement).addEventListener('click', () => {
             this.saveAttributes();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -38,15 +41,15 @@ class Attributes {
                 this.saveAttributes();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-attributes');
+                ipcRenderer.send('close-attributes');
             }
         });
-        this.electron.ipcRenderer.send('get-lang-attributes-text');
-        this.electron.ipcRenderer.on('set-lang-attributes-text', (event: Electron.IpcRendererEvent, text: string) => {
+        ipcRenderer.send('get-lang-attributes-text');
+        ipcRenderer.on('set-lang-attributes-text', (event: Electron.IpcRendererEvent, text: string) => {
             this.langAttributesText = text;
         });
         setTimeout(() => {
-            this.electron.ipcRenderer.send('attributes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+            ipcRenderer.send('attributes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
         }, 150);
     }
 
@@ -54,7 +57,7 @@ class Attributes {
         this.currentId = arg.id;
         this.currentType = arg.type;
         if (this.currentType !== 'TU') {
-            document.getElementById('title').innerHTML = this.langAttributesText;
+            (document.getElementById('title') as HTMLTitleElement).innerHTML = this.langAttributesText;
         }
 
         let attributes: Array<string[]> = arg.atts;
@@ -75,7 +78,7 @@ class Attributes {
             (document.getElementById('topRow') as HTMLTableRowElement).style.display = 'none';
         }
         setTimeout(() => {
-            this.electron.ipcRenderer.send('attributes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+            ipcRenderer.send('attributes-height', { width: document.body.clientWidth, height: document.body.clientHeight });
         }, 150);
     }
 
@@ -86,7 +89,7 @@ class Attributes {
             options = options + '<option value="' + lang.code + '">' + lang.code + '</option>'
         }
         language.innerHTML = options;
-        this.electron.ipcRenderer.send('get-unit-attributes');
+        ipcRenderer.send('get-unit-attributes');
     }
 
     saveAttributes(): void {
@@ -173,6 +176,6 @@ class Attributes {
             lang: lang,
             attributes: array
         }
-        this.electron.ipcRenderer.send('save-attributes', arg);
+        ipcRenderer.send('save-attributes', arg);
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Remplacer du texte</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body class="dialog_body" onload="new SearchReplace();">
+<body class="dialog_body">
 
     <table class="table_width">
         <tr>
@@ -36,7 +36,11 @@
     <div class="buttonArea">
         <button id="replace">Remplacer toutes les occurrences</button>
     </div>
-    <script src="../../js/searchReplace.js"></script>
+    
+    <script>
+        const { SearchReplace } = require('../../js/searchReplace.js');
+        new SearchReplace();
+    </script>
 </body>
 
 </html>

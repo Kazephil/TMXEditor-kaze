@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <title>Idiomas del Archivo Excel</title>
@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new ExcelLanguages();">
+<body class="dialog_body">
 
     <div class="bordered fill_width"
         style="width: 480px; height: 200px; padding: 4px; margin-top:10px; margin-left:4px;">
@@ -21,7 +21,10 @@
         <button id="setExcelLanguages">Seleccionar Idiomas</button>
     </div>
 
-    <script src="../../js/excelLanguages.js"></script>
+    <script>
+        const { ExcelLanguages } = require('../../js/excelLanguages.js');
+        new ExcelLanguages();
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018-2025 Maxprograms.
+ * Copyright (c) 2018-2026 Maxprograms.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 1.0
@@ -10,20 +10,21 @@
  *     Maxprograms - initial API and implementation
  *******************************************************************************/
 
-class AddLanguage {
+import { ipcRenderer } from "electron";
+import { Language } from "./language.js";
 
-    electron = require('electron');
+export class AddLanguage {
 
     constructor() {
-        this.electron.ipcRenderer.send('get-theme');
-        this.electron.ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
+        ipcRenderer.send('get-theme');
+        ipcRenderer.on('set-theme', (event: Electron.IpcRendererEvent, css: string) => {
             (document.getElementById('theme') as HTMLLinkElement).href = css;
         });
-        this.electron.ipcRenderer.send('all-languages');
-        this.electron.ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
+        ipcRenderer.send('all-languages');
+        ipcRenderer.on('languages-list', (event: Electron.IpcRendererEvent, arg: Language[]) => {
             this.languageList(arg);
         });
-        document.getElementById('addLanguage').addEventListener('click', () => {
+        (document.getElementById('addLanguage') as HTMLButtonElement).addEventListener('click', () => {
             this.addLanguage();
         });
         document.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -31,11 +32,11 @@ class AddLanguage {
                 this.addLanguage();
             }
             if (event.code === 'Escape') {
-                this.electron.ipcRenderer.send('close-addLanguage');
+                ipcRenderer.send('close-addLanguage');
             }
         });
-        document.getElementById('language').focus();
-        this.electron.ipcRenderer.send('addLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
+        (document.getElementById('language') as HTMLSelectElement).focus();
+        ipcRenderer.send('addLanguage-height', { width: document.body.clientWidth, height: document.body.clientHeight });
     }
 
     languageList(langs: Language[]): void {
@@ -50,9 +51,9 @@ class AddLanguage {
     addLanguage(): void {
         let language: HTMLSelectElement = document.getElementById('language') as HTMLSelectElement;
         if (language.value === 'none') {
-            this.electron.ipcRenderer.send('show-message', { type: 'warning', group: 'addLanguage', key: 'selectLanguageWarning', parent: 'addLanguage' });
+            ipcRenderer.send('show-message', { type: 'warning', group: 'addLanguage', key: 'selectLanguageWarning', parent: 'addLanguage' });
             return;
         }
-        this.electron.ipcRenderer.send('add-language', language.value);
+        ipcRenderer.send('add-language', language.value);
     }
 }

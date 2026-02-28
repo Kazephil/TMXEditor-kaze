@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="../../css/fonts.css">
 </head>
 
-<body class="dialog_body" onload="new About();">
+<body class="dialog_body">
     <div class="fill_width center">
         <img src="../../images/about.png" alt="about box">
     </div>
@@ -15,7 +15,10 @@
         <button id="system">System Information</button>
         <button class="right" id="licenses">Licenses</button>
     </div>
-    <script src="../../js/about.js"></script>
+    <script>
+        const { About } = require('../../js/about.js');
+        new About()
+    </script>
 </body>
 
 </html>

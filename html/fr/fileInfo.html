@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <title>Métadonnées du fichier</title>
@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 </head>
 
-<body onload="new FileInfo();">
+<body>
 
     <div id="tabHolder" class="tabHolder">
         <div class="tab selectedTab" id="atributesTab"><a id="showAttributes" class="button">Attributs TMX</a></div>
@@ -130,7 +130,10 @@
         <button id="saveNotes">Enregistrer les notes</button>
     </div>
 
-    <script src="../../js/fileInfo.js"></script>
+    <script>
+        const { FileInfo } = require('../../js/fileInfo.js');
+        new FileInfo();
+    </script>
 </body>
 
 </html>
