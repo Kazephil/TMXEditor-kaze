@@ -16,7 +16,6 @@ repositories {
 }
 
 dependencies {
-    implementation files('jars/capi.jar')
     implementation files('jars/bcp47j.jar')
     implementation files('jars/json.jar')
     implementation files('jars/sqlite-jdbc-3.50.3.0.jar')
